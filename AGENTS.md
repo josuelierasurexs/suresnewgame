@@ -19,7 +19,7 @@ The player controls a Surexs employee who performs work-related poses according 
 There are only three rhythm actions:
 
 - `LEFT` — press left.
-- `CENTER` — press nothing.
+- `CENTER` — press the explicit center action.
 - `RIGHT` — press right.
 
 Rhythm tiles move toward a hit zone. The player must perform the correct input at the correct time.
@@ -115,39 +115,47 @@ Temporary keyboard controls:
 
 ```text
 A = LEFT
+W / S = CENTER
 D = RIGHT
-No direction input = CENTER
 ```
 
 ### Player 2
 
 ```text
 Left Arrow  = LEFT
+Up / Down Arrow = CENTER
 Right Arrow = RIGHT
-No direction input = CENTER
 ```
 
-Do not add UP, DOWN, diagonals, triggers, or extra rhythm buttons unless explicitly requested.
+Up/Down are alternate physical bindings for the single logical CENTER action, not extra rhythm directions.
+
+Provisional standard gamepad mapping:
+
+```text
+West face button (Xbox X) = LEFT
+South face button (Xbox A) = CENTER
+East face button (Xbox B) = RIGHT
+```
+
+`KeyboardInputReader`, `GamepadInputReader`, and `JoystickInputReader` must implement `IRhythmInputSource`, translating physical controls into only `LEFT`, `CENTER`, and `RIGHT`. RhythmJudge and visual feedback consume those logical actions and must not contain device-specific code. This gamepad mapping is provisional and may change for the physical stand controller.
+
+Generic HID devices reported by Input System as `Joystick` use configurable button paths plus stick/hat bindings. Axes require a configurable threshold and rising-edge detection; held axes must not emit every frame. Do not assume universal HID button indices. The smzy-power BSP/Y01 mapping remains provisional until its exact button control paths are verified in Input Debugger.
 
 ---
 
 ## 6. CENTER rule
 
-CENTER is represented by **absence of directional input**.
-
-Do not implement CENTER as a third physical button.
+CENTER is an **explicit logical action**.
 
 The judge must distinguish:
 
 ```text
 LEFT
+CENTER
 RIGHT
-NO INPUT
 ```
 
-A previously pressed direction that has been released before the CENTER window must not count as CENTER incorrectly.
-
-A LEFT or RIGHT input during the CENTER window is a miss/error.
+No input must not hit CENTER. A wrong direction during a registrable note is a MISS. Input with no registrable note is also a MISS, breaks that player's combo, and must not consume a future note.
 
 ---
 
@@ -335,6 +343,8 @@ Responsible for:
 ### InputManager
 
 Converts physical device input into gameplay actions.
+
+Use interchangeable `IRhythmInputSource` implementations for keyboard, standard gamepad, and generic HID joystick. Keep physical bindings inside their reader; downstream gameplay receives only logical rhythm directions.
 
 Do not put score logic here.
 
@@ -632,7 +642,7 @@ For rhythm changes verify:
 - Tiles reach the hit zone at the expected time.
 - LEFT works.
 - RIGHT works.
-- CENTER works through no input.
+- CENTER works through W/S for P1 and Up/Down Arrow for P2.
 - Timing windows work.
 - PERFECT/GREAT/GOOD/MISS work.
 - Combo increases.

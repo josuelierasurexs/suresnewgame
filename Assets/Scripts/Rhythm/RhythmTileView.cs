@@ -1,4 +1,5 @@
 using Surexs.DanceOff.Data;
+using Surexs.DanceOff.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,7 +23,11 @@ namespace Surexs.DanceOff.Rhythm
             var tileObject = new GameObject("Rhythm Tile", typeof(RectTransform), typeof(Image), typeof(RhythmTileView));
             var tileRect = tileObject.GetComponent<RectTransform>();
             tileRect.SetParent(parent, false);
-            tileRect.sizeDelta = new Vector2(220f, 92f);
+            tileRect.sizeDelta = new Vector2(168f, 78f);
+            var tileImage=tileObject.GetComponent<Image>();
+            SurexsVisualTheme.ApplyRounded(tileImage);
+            var shadow=tileObject.AddComponent<Shadow>(); shadow.effectColor=new Color(0,0,0,.55f); shadow.effectDistance=new Vector2(0,-6f);
+            var outline=tileObject.AddComponent<Outline>(); outline.effectColor=new Color(1,1,1,.24f); outline.effectDistance=new Vector2(2,-2);
 
             var textObject = new GameObject("Label", typeof(RectTransform), typeof(Text));
             var textRect = textObject.GetComponent<RectTransform>();
@@ -33,8 +38,8 @@ namespace Surexs.DanceOff.Rhythm
             textRect.offsetMax = Vector2.zero;
 
             var text = textObject.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = 30;
+            text.font = SurexsVisualTheme.Font;
+            text.fontSize = 25;
             text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;

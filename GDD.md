@@ -23,7 +23,7 @@ Durante una canción aparecen tiles que se desplazan hacia una zona de ejecució
 Cada tile representa una de tres acciones:
 
 - `LEFT` — presionar izquierda.
-- `CENTER` — no presionar ningún botón.
+- `CENTER` — presionar la acción central explícita.
 - `RIGHT` — presionar derecha.
 
 Cuando el tile llega a la zona de ejecución, el jugador debe realizar la acción correcta en el momento adecuado.
@@ -157,47 +157,59 @@ Debe existir la posibilidad de:
 
 El juego está diseñado principalmente para controles.
 
-## Jugador 1
+## Teclado — Jugador 1
 
-- D-Pad izquierda = `LEFT`
-- D-Pad derecha = `RIGHT`
-- Ningún botón = `CENTER`
+- `A` = `LEFT`
+- `W` o `S` = `CENTER`
+- `D` = `RIGHT`
 
-## Jugador 2
+## Teclado — Jugador 2
 
-- D-Pad izquierda = `LEFT`
-- D-Pad derecha = `RIGHT`
-- Ningún botón = `CENTER`
+- `Left Arrow` = `LEFT`
+- `Up Arrow` o `Down Arrow` = `CENTER`
+- `Right Arrow` = `RIGHT`
 
 Para desarrollo y pruebas también debe existir soporte temporal de teclado.
+
+## Gamepad provisional de pruebas
+
+- Botón oeste (`X` en layout Xbox) = `LEFT`
+- Botón sur (`A` en layout Xbox) = `CENTER`
+- Botón este (`B` en layout Xbox) = `RIGHT`
+
+Este mapping es provisional y podrá cambiar cuando se conecte el control físico del stand. Tanto `KeyboardInputReader` como `GamepadInputReader` convierten el dispositivo físico en las mismas tres acciones lógicas mediante `IRhythmInputSource`; los sistemas de judge, score y combo no dependen del dispositivo.
+
+## Joystick HID genérico
+
+Los controles que Unity clasifica como `Joystick`, incluido provisionalmente el BSP/Y01 de smzy-power Ltd., utilizan `JoystickInputReader`. El stick y el hat switch admiten múltiples bindings: izquierda = `LEFT`, arriba/abajo = una única acción `CENTER`, derecha = `RIGHT`. Los botones adicionales se configuran por control path después de observar el layout real en Input Debugger; no se asumen índices universales. Los ejes usan umbral y detección de flanco para emitir una sola pulsación lógica.
 
 ### Teclado P1
 
 - `A` = LEFT
+- `W` o `S` = CENTER
 - `D` = RIGHT
-- Ninguna tecla = CENTER
 
 ### Teclado P2
 
 - `Left Arrow` = LEFT
+- `Up Arrow` o `Down Arrow` = CENTER
 - `Right Arrow` = RIGHT
-- Ninguna tecla = CENTER
 
 ---
 
 # 6. Regla especial de CENTER
 
-`CENTER` representa una ausencia de input.
-
-Esto significa que el jugador NO debe presionar izquierda ni derecha durante la ventana de ejecución.
+`CENTER` es una acción explícita que comparte una sola dirección lógica aunque tenga dos teclas físicas.
 
 El sistema debe detectar correctamente:
 
-- Que no exista input durante la ventana.
-- Que una entrada izquierda/derecha durante CENTER sea un error.
-- Que el jugador pueda haber presionado una dirección previamente pero la haya soltado antes de la ventana.
+- `W` o `S` como `CENTER` para P1.
+- `Up Arrow` o `Down Arrow` como `CENTER` para P2.
+- La ausencia de input no acierta un tile `CENTER`.
+- Una dirección incorrecta durante una nota registrable genera `MISS`.
+- Un input cuando no existe una nota registrable genera `MISS`, rompe el combo y no consume notas futuras.
 
-La lógica de CENTER debe estar claramente separada de la lógica de LEFT/RIGHT.
+La lógica interna conserva solamente `LEFT`, `CENTER` y `RIGHT`.
 
 ---
 
@@ -1000,9 +1012,9 @@ Responsable de recibir:
 
 - LEFT.
 - RIGHT.
-- CENTER / ausencia de input.
+- CENTER explícito.
 
-Debe soportar múltiples dispositivos.
+Debe soportar múltiples dispositivos mediante fuentes intercambiables. `KeyboardInputReader`, `GamepadInputReader` y `JoystickInputReader` implementan `IRhythmInputSource` y solamente emiten `LEFT`, `CENTER` o `RIGHT`. El mapping X/A/B del gamepad y la configuración HID del BSP/Y01 son provisionales para pruebas del stand.
 
 Utilizar Unity Input System.
 
@@ -1406,7 +1418,7 @@ El MVP se considera exitoso cuando:
 2. Los tiles aparecen sincronizados con la música.
 3. Los tiles llegan correctamente a la zona de ejecución.
 4. El jugador puede utilizar LEFT y RIGHT.
-5. CENTER funciona mediante ausencia de input.
+5. CENTER funciona mediante W/S para P1 y Up/Down Arrow para P2.
 6. El sistema detecta timing.
 7. Se muestran PERFECT/GREAT/GOOD/MISS.
 8. El score aumenta correctamente.

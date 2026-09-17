@@ -13,7 +13,7 @@ OcclusionCullingSettings:
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 9
+  serializedVersion: 10
   m_Fog: 0
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
@@ -38,13 +38,12 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 12
-  m_GIWorkflowMode: 1
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -67,9 +66,6 @@ LightmapSettings:
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
     m_TextureCompression: 1
-    m_FinalGather: 0
-    m_FinalGatherFiltering: 1
-    m_FinalGatherRayCount: 256
     m_ReflectionCompression: 2
     m_MixedBakeMode: 2
     m_BakeBackend: 1
@@ -91,6 +87,12 @@ LightmapSettings:
     m_PVRFilteringGaussRadiusDirect: 1
     m_PVRFilteringGaussRadiusIndirect: 5
     m_PVRFilteringGaussRadiusAO: 2
+    m_PVRFilteringAtrousPositionSigmaDirect: 0.5
+    m_PVRFilteringAtrousPositionSigmaIndirect: 2
+    m_PVRFilteringAtrousPositionSigmaAO: 1
+    m_ExportTrainingData: 0
+    m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
@@ -98,7 +100,7 @@ NavMeshSettings:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_BuildSettings:
-    serializedVersion: 2
+    serializedVersion: 3
     agentTypeID: 0
     agentRadius: 0.5
     agentHeight: 2
@@ -111,7 +113,7 @@ NavMeshSettings:
     cellSize: 0.16666667
     manualTileSize: 0
     tileSize: 256
-    accuratePlacement: 0
+    buildHeightMesh: 0
     maxJobWorkers: 0
     preserveTilesOutsideBounds: 0
     debug:
@@ -163,3 +165,109 @@ MonoBehaviour:
   m_EditorClassIdentifier: Surexs.DanceOff.Core::Surexs.DanceOff.Core.PhaseOneSceneBootstrap
   song: {fileID: 8300000, guid: d023565cf9276714aa18308dfe18fa28, type: 3}
   chart: {fileID: 4900000, guid: 0ce35ef589b08234186e9d67a82288f1, type: 3}
+  gameplayConfig:
+    perfectWindow: 0.05
+    greatWindow: 0.1
+    goodWindow: 0.175
+    perfectScore: 100
+    greatScore: 75
+    goodScore: 50
+    comboFor2x: 5
+    comboFor3x: 10
+    comboFor4x: 20
+    comboFor5x: 30
+    comboMilestones:
+    - combo: 5
+      message: GOOD START!
+    - combo: 10
+      message: COMBO!
+    - combo: 20
+      message: AMAZING!
+    - combo: 30
+      message: FANTASTIC!
+    - combo: 50
+      message: UNSTOPPABLE!
+    - combo: 75
+      message: SUREXS LEGEND!
+  player1InputSource: 0
+  player2InputSource: 0
+  player1GamepadIndex: 0
+  player2GamepadIndex: 1
+  player1GamepadAxisThreshold: 0.5
+  player2GamepadAxisThreshold: 0.5
+  player1Joystick:
+    joystickIndex: 0
+    axisThreshold: 0.5
+    leftButtonPaths: []
+    centerButtonPaths: []
+    rightButtonPaths: []
+    diagnosticLogging: 0
+  player2Joystick:
+    joystickIndex: 1
+    axisThreshold: 0.5
+    leftButtonPaths: []
+    centerButtonPaths: []
+    rightButtonPaths: []
+    diagnosticLogging: 0
+  poseDuration: 0.35
+  poseDefinitions:
+  - id: neutral
+    displayName: Neutral
+    bodyColor: {r: 0.22, g: 0.67, b: 0.92, a: 1}
+    leftArmAngle: 15
+    rightArmAngle: -15
+  - id: phone
+    displayName: Phone
+    bodyColor: {r: 0.26, g: 0.8, b: 0.65, a: 1}
+    leftArmAngle: 65
+    rightArmAngle: -10
+  - id: typing
+    displayName: Typing
+    bodyColor: {r: 0.48, g: 0.58, b: 0.95, a: 1}
+    leftArmAngle: -55
+    rightArmAngle: 55
+  - id: presentation
+    displayName: Presentation
+    bodyColor: {r: 0.95, g: 0.48, b: 0.38, a: 1}
+    leftArmAngle: 125
+    rightArmAngle: -25
+  - id: coffee
+    displayName: Coffee
+    bodyColor: {r: 0.62, g: 0.42, b: 0.25, a: 1}
+    leftArmAngle: 25
+    rightArmAngle: -75
+  - id: documents
+    displayName: Documents
+    bodyColor: {r: 0.92, g: 0.72, b: 0.25, a: 1}
+    leftArmAngle: -20
+    rightArmAngle: 70
+  - id: document
+    displayName: Documents
+    bodyColor: {r: 0.92, g: 0.72, b: 0.25, a: 1}
+    leftArmAngle: -20
+    rightArmAngle: 70
+  - id: meeting
+    displayName: Meeting
+    bodyColor: {r: 0.75, g: 0.42, b: 0.9, a: 1}
+    leftArmAngle: 115
+    rightArmAngle: -115
+  - id: thinking
+    displayName: Thinking
+    bodyColor: {r: 0.38, g: 0.72, b: 0.86, a: 1}
+    leftArmAngle: 80
+    rightArmAngle: -5
+  - id: celebration
+    displayName: Celebration
+    bodyColor: {r: 0.98, g: 0.55, b: 0.72, a: 1}
+    leftArmAngle: 145
+    rightArmAngle: -145
+  - id: mouse
+    displayName: Mouse
+    bodyColor: {r: 0.42, g: 0.82, b: 0.48, a: 1}
+    leftArmAngle: 10
+    rightArmAngle: -50
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 1001}

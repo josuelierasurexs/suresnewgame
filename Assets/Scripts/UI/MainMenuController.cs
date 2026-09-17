@@ -16,6 +16,7 @@ namespace Surexs.DanceOff.UI
         private Button playButton;
         private Button soloButton;
         private Button optionsBackButton;
+        private bool initialized;
 
         public void Configure(GameObject main, GameObject modes, GameObject options, Button play,
             Button solo, Button optionsBack)
@@ -44,7 +45,18 @@ namespace Surexs.DanceOff.UI
 
         private void StartGame(GameMode mode) { GameSession.SelectMode(mode); SceneManager.LoadScene("Game"); }
         private void ShowOnly(GameObject selected)
-        { mainPanel.SetActive(selected==mainPanel); modePanel.SetActive(selected==modePanel); optionsPanel.SetActive(selected==optionsPanel); }
+        {
+            SetVisible(mainPanel,selected==mainPanel);
+            SetVisible(modePanel,selected==modePanel);
+            SetVisible(optionsPanel,selected==optionsPanel);
+            initialized=true;
+        }
+        private void SetVisible(GameObject panel,bool visible)
+        {
+            var transition=panel.GetComponent<UiPanelTransition>();
+            if (transition != null) transition.SetVisible(visible,!initialized);
+            else panel.SetActive(visible);
+        }
         private static void Select(Button button) { EventSystem.current.SetSelectedGameObject(button.gameObject); }
     }
 }

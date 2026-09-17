@@ -18,6 +18,15 @@ namespace Surexs.DanceOff.Core
         [SerializeField] private TextAsset chart;
         private GameMode gameMode => GameSession.SelectedMode;
         [SerializeField] private RhythmGameplayConfig gameplayConfig = new RhythmGameplayConfig();
+        [Header("Input Sources")]
+        [SerializeField] private RhythmInputSourceType player1InputSource = RhythmInputSourceType.Keyboard;
+        [SerializeField] private RhythmInputSourceType player2InputSource = RhythmInputSourceType.Keyboard;
+        [SerializeField, Min(0)] private int player1GamepadIndex;
+        [SerializeField, Min(0)] private int player2GamepadIndex = 1;
+        [SerializeField, Range(0.1f, 0.95f)] private float player1GamepadAxisThreshold = 0.5f;
+        [SerializeField, Range(0.1f, 0.95f)] private float player2GamepadAxisThreshold = 0.5f;
+        [SerializeField] private JoystickInputConfig player1Joystick = new JoystickInputConfig();
+        [SerializeField] private JoystickInputConfig player2Joystick = new JoystickInputConfig { joystickIndex = 1 };
         [SerializeField, Min(0.05f)] private float poseDuration = 0.35f;
         [SerializeField] private PoseData[] poseDefinitions =
         {
@@ -40,27 +49,29 @@ namespace Surexs.DanceOff.Core
             CreateCamera();
             CreateEventSystem();
             var canvas = CreateCanvas();
-            Image("Background", canvas, Vector2.zero, new Vector2(1920,1080), new Color(.035f,.047f,.082f));
+            Image("Background", canvas, Vector2.zero, new Vector2(1920,1080), SurexsVisualTheme.Background);
+            Image("Header Glow",canvas,new Vector2(0,485),new Vector2(1920,110),SurexsVisualTheme.BackgroundGlow);
+            Image("Header Accent",canvas,new Vector2(0,438),new Vector2(680,5),SurexsVisualTheme.Accent);
             Text("Title", canvas, new Vector2(0,505), new Vector2(1500,55),
                 gameMode == GameMode.LocalVersus ? "SUREXS DANCE OFF  •  1 VS 1 LOCAL" : "SUREXS DANCE OFF  •  SOLO", 34);
             Text("Controls", canvas, new Vector2(0,460), new Vector2(1500,38),
-                gameMode == GameMode.LocalVersus ? "P1: A / W-S / D     •     P2: ← / ↑-↓ / →" : "A = LEFT     W / S = CENTER     D = RIGHT", 20);
+                ControlsText(), 20);
             var tileRoot = Rect("Runtime Tiles", canvas, Vector2.zero, new Vector2(1920,1080));
             var shared = Shared();
             PlayerSession[] sessions;
 
             if (gameMode == GameMode.LocalVersus)
             {
-                Image("Divider", canvas, Vector2.zero, new Vector2(4,880), new Color(.35f,.45f,.65f,.65f));
-                var p1 = Player(shared, tileRoot, canvas, "PLAYER 1", -500, new[] {-750f,-500f,-250f}, Key.A, Key.W, Key.S, Key.D, new Color(.22f,.67f,.92f));
-                var p2 = Player(shared, tileRoot, canvas, "PLAYER 2",  500, new[] { 250f, 500f, 750f}, Key.LeftArrow, Key.UpArrow, Key.DownArrow, Key.RightArrow, new Color(.95f,.45f,.55f));
+                Image("Divider", canvas, Vector2.zero, new Vector2(4,880), new Color(.35f,.45f,.65f,.38f));
+                var p1 = Player(shared, tileRoot, canvas, "PLAYER 1", -500, new[] {-750f,-500f,-250f}, Key.A, Key.W, Key.S, Key.D, new Color(.22f,.67f,.92f),player1InputSource,player1GamepadIndex,player1GamepadAxisThreshold,player1Joystick);
+                var p2 = Player(shared, tileRoot, canvas, "PLAYER 2",  500, new[] { 250f, 500f, 750f}, Key.LeftArrow, Key.UpArrow, Key.DownArrow, Key.RightArrow, new Color(.95f,.45f,.55f),player2InputSource,player2GamepadIndex,player2GamepadAxisThreshold,player2Joystick);
                 shared.Controller.Configure(shared.Audio, shared.Chart, new[] {p1.Tiles,p2.Tiles}, new[] {p1.Judge,p2.Judge}, gameplayConfig);
                 shared.Root.AddComponent<LocalVersusMatchState>().Configure(p1.Score, p2.Score);
                 sessions = new[] { p1.Session, p2.Session };
             }
             else
             {
-                var p1 = Player(shared, tileRoot, canvas, "PLAYER 1", 700, new[] {-350f,0f,350f}, Key.A, Key.W, Key.S, Key.D, new Color(.22f,.67f,.92f));
+                var p1 = Player(shared, tileRoot, canvas, "PLAYER 1", 700, new[] {-350f,0f,350f}, Key.A, Key.W, Key.S, Key.D, new Color(.22f,.67f,.92f),player1InputSource,player1GamepadIndex,player1GamepadAxisThreshold,player1Joystick);
                 shared.Controller.Configure(shared.Audio, shared.Chart, p1.Tiles, p1.Judge, gameplayConfig);
                 sessions = new[] { p1.Session };
             }
@@ -81,14 +92,19 @@ namespace Surexs.DanceOff.Core
         }
 
         private PlayerSet Player(SharedSet shared, RectTransform tileRoot, Transform canvas, string name, float x,
-            float[] lanes, Key left, Key centerPrimary, Key centerSecondary, Key right, Color accent)
+            float[] lanes, Key left, Key centerPrimary, Key centerSecondary, Key right, Color accent,
+            RhythmInputSourceType inputSourceType, int gamepadIndex, float gamepadAxisThreshold,
+            JoystickInputConfig joystickConfig)
         {
             var labels = new[] {"LEFT ←","CENTER ●","RIGHT →"};
             var hitZones = new Image[3];
             for (var i=0;i<3;i++)
             {
-                Image(name+" Lane "+i, canvas, new Vector2(lanes[i],35), new Vector2(190,620), new Color(accent.r*.22f,accent.g*.22f,accent.b*.22f,.88f));
-                hitZones[i]=Image(name+" Hit "+i, canvas, new Vector2(lanes[i],-175), new Vector2(190,85), new Color(.2f,1f,.56f,.42f));
+                var lane=Image(name+" Lane "+i, canvas, new Vector2(lanes[i],35), new Vector2(190,620), new Color(accent.r*.20f,accent.g*.20f,accent.b*.20f,.82f));
+                SurexsVisualTheme.ApplyRounded(lane);
+                hitZones[i]=Image(name+" Hit "+i, canvas, new Vector2(lanes[i],-175), new Vector2(180,80), new Color(.12f,.86f,.48f,.48f));
+                SurexsVisualTheme.ApplyRounded(hitZones[i]);
+                var hitOutline=hitZones[i].gameObject.AddComponent<Outline>(); hitOutline.effectColor=new Color(.45f,1f,.72f,.9f); hitOutline.effectDistance=new Vector2(3,-3);
                 Text(name+" Label "+i, canvas, new Vector2(lanes[i],375), new Vector2(205,38), labels[i], 19);
             }
             var status=Text(name+" Status",canvas,new Vector2(x,420),new Vector2(880,80),"",17);
@@ -96,7 +112,7 @@ namespace Surexs.DanceOff.Core
             var milestone=Text(name+" Milestone",canvas,new Vector2(x,320),new Vector2(500,50),"",27);
             var visual=Visual(canvas,name,x,accent);
             var go=new GameObject(name+" Systems");
-            var input=go.AddComponent<KeyboardInputReader>(); input.Configure(left,centerPrimary,centerSecondary,right);
+            var input=CreateInputSource(go,inputSourceType,gamepadIndex,gamepadAxisThreshold,joystickConfig,left,centerPrimary,centerSecondary,right);
             go.AddComponent<ControlInputFeedbackView>().Configure(input,hitZones[0],hitZones[1],hitZones[2]);
             var judge=go.AddComponent<RhythmJudge>(); judge.Configure(shared.Audio,input,gameplayConfig);
             var combo=go.AddComponent<ComboManager>(); combo.Configure(gameplayConfig);
@@ -110,16 +126,58 @@ namespace Surexs.DanceOff.Core
             return new PlayerSet(judge,tiles,score,new PlayerSession(judge,tiles,score,combo,feedback,player));
         }
 
+        private static IRhythmInputSource CreateInputSource(GameObject owner, RhythmInputSourceType sourceType,
+            int gamepadIndex, float gamepadAxisThreshold, JoystickInputConfig joystickConfig,
+            Key left, Key centerPrimary, Key centerSecondary, Key right)
+        {
+            if (sourceType == RhythmInputSourceType.Gamepad)
+            {
+                var gamepad=owner.AddComponent<GamepadInputReader>();
+                gamepad.Configure(gamepadIndex,gamepadAxisThreshold);
+                return gamepad;
+            }
+
+            if (sourceType == RhythmInputSourceType.Joystick)
+            {
+                var joystick=owner.AddComponent<JoystickInputReader>();
+                joystick.Configure(joystickConfig);
+                return joystick;
+            }
+
+            var keyboard=owner.AddComponent<KeyboardInputReader>();
+            keyboard.Configure(left,centerPrimary,centerSecondary,right);
+            return keyboard;
+        }
+
+        private string ControlsText()
+        {
+            var player1=InputLabel("P1",player1InputSource,player1GamepadIndex,player1Joystick);
+            if (gameMode != GameMode.LocalVersus) return player1;
+            var player2=InputLabel("P2",player2InputSource,player2GamepadIndex,player2Joystick);
+            return $"{player1}     •     {player2}";
+        }
+
+        private static string InputLabel(string player, RhythmInputSourceType sourceType, int gamepadIndex,
+            JoystickInputConfig joystickConfig)
+        {
+            if (sourceType == RhythmInputSourceType.Gamepad) return $"{player}: GAMEPAD {gamepadIndex + 1}  X / A / B + D-PAD/STICK";
+            if (sourceType == RhythmInputSourceType.Joystick) return $"{player}: JOYSTICK {(joystickConfig?.joystickIndex ?? 0) + 1}  STICK / HAT / BUTTONS";
+            return player == "P1" ? "P1: A / W-S / D" : "P2: ← / ↑-↓ / →";
+        }
+
         private static ResultsView CreateResultsView(Transform canvas)
         {
-            var panel=Image("Results Panel",canvas,Vector2.zero,new Vector2(1920,1080),new Color(.025f,.035f,.065f,.98f));
-            var p1Card=Image("P1 Results Card",panel.transform,new Vector2(-430,55),new Vector2(650,670),new Color(.07f,.12f,.20f,.96f));
-            var p2Card=Image("P2 Results Card",panel.transform,new Vector2(430,55),new Vector2(650,670),new Color(.13f,.07f,.12f,.96f));
+            var panel=Image("Results Panel",canvas,Vector2.zero,new Vector2(1920,1080),SurexsVisualTheme.Background);
+            Image("Results Glow",panel.transform,new Vector2(0,470),new Vector2(1920,140),SurexsVisualTheme.BackgroundGlow);
+            Image("Results Accent",panel.transform,new Vector2(0,418),new Vector2(560,6),SurexsVisualTheme.Accent);
+            var p1Card=Image("P1 Results Card",panel.transform,new Vector2(-430,45),new Vector2(650,650),SurexsVisualTheme.SurfaceRaised);
+            var p2Card=Image("P2 Results Card",panel.transform,new Vector2(430,45),new Vector2(650,650),new Color(.15f,.07f,.18f,.98f));
+            SurexsVisualTheme.ApplyRounded(p1Card); SurexsVisualTheme.ApplyRounded(p2Card);
             var title=Text("Results Title",panel.transform,new Vector2(0,400),new Vector2(1200,90),"RESULTADOS",48);
             var p1=Text("P1 Results",panel.transform,new Vector2(-430,60),new Vector2(620,650),"",28);
             var p2=Text("P2 Results",panel.transform,new Vector2(430,60),new Vector2(620,650),"",28);
-            var retry=Button("Rematch",panel.transform,new Vector2(-180,-420),new Vector2(300,75),"REVANCHA",new Color(.16f,.65f,.42f));
-            var menu=Button("Menu",panel.transform,new Vector2(180,-420),new Vector2(300,75),"MENU",new Color(.25f,.28f,.36f));
+            var retry=Button("Rematch",panel.transform,new Vector2(-180,-420),new Vector2(300,75),"REVANCHA",SurexsVisualTheme.Success);
+            var menu=Button("Menu",panel.transform,new Vector2(180,-420),new Vector2(300,75),"MENU",SurexsVisualTheme.Primary);
             var view=panel.gameObject.AddComponent<ResultsView>(); view.Configure(panel.gameObject,title,p1,p2,p1Card.gameObject,p2Card.gameObject,retry,menu);
             return view;
         }
@@ -133,7 +191,8 @@ namespace Surexs.DanceOff.Core
 
         private static VisualSet Visual(Transform parent,string name,float x,Color accent)
         {
-            var stage=Image(name+" Placeholder",parent,new Vector2(x,-425),new Vector2(250,230),new Color(.06f,.09f,.16f,.96f));
+            var stage=Image(name+" Placeholder",parent,new Vector2(x,-425),new Vector2(250,230),SurexsVisualTheme.Surface);
+            SurexsVisualTheme.ApplyRounded(stage);
             Text(name+" Name",stage.transform,new Vector2(0,91),new Vector2(230,32),name,19);
             var body=Image("Body",stage.transform,new Vector2(0,-8),new Vector2(75,90),accent);
             Image("Head",stage.transform,new Vector2(0,56),new Vector2(55,55),new Color(1,.78f,.58f));
@@ -147,7 +206,7 @@ namespace Surexs.DanceOff.Core
         {
             if (Camera.main) return;
             var go=new GameObject("Main Camera",typeof(Camera),typeof(AudioListener)); go.tag="MainCamera"; go.transform.position=new Vector3(0,0,-10);
-            var camera=go.GetComponent<Camera>(); camera.orthographic=true; camera.orthographicSize=5; camera.backgroundColor=new Color(.035f,.047f,.082f);
+            var camera=go.GetComponent<Camera>(); camera.orthographic=true; camera.orthographicSize=5; camera.backgroundColor=SurexsVisualTheme.Background;
         }
         private static Transform CreateCanvas()
         {
@@ -161,9 +220,9 @@ namespace Surexs.DanceOff.Core
         private static Image Image(string name,Transform parent,Vector2 pos,Vector2 size,Color color)
         { var go=new GameObject(name,typeof(RectTransform),typeof(Image)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var i=go.GetComponent<Image>(); i.color=color; i.raycastTarget=false; return i; }
         private static Text Text(string name,Transform parent,Vector2 pos,Vector2 size,string value,int fontSize)
-        { var go=new GameObject(name,typeof(RectTransform),typeof(Text)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var t=go.GetComponent<Text>(); t.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); t.fontSize=fontSize; t.fontStyle=FontStyle.Bold; t.alignment=TextAnchor.MiddleCenter; t.color=Color.white; t.text=value; t.raycastTarget=false; return t; }
+        { var go=new GameObject(name,typeof(RectTransform),typeof(Text)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var t=go.GetComponent<Text>(); t.font=SurexsVisualTheme.Font; t.fontSize=fontSize; t.fontStyle=FontStyle.Bold; t.alignment=TextAnchor.MiddleCenter; t.color=SurexsVisualTheme.TextPrimary; t.text=value; t.raycastTarget=false; return t; }
         private static Button Button(string name,Transform parent,Vector2 pos,Vector2 size,string label,Color color)
-        { var image=Image(name,parent,pos,size,color); image.raycastTarget=true; var outline=image.gameObject.AddComponent<Outline>(); outline.effectColor=new Color(.65f,.85f,1f,.8f); outline.effectDistance=new Vector2(2,-2); var button=image.gameObject.AddComponent<Button>(); button.targetGraphic=image; button.transition=Selectable.Transition.ColorTint; var colors=ColorBlock.defaultColorBlock; colors.normalColor=color; colors.highlightedColor=Color.Lerp(color,Color.white,.28f); colors.selectedColor=Color.Lerp(color,Color.white,.4f); colors.pressedColor=Color.Lerp(color,Color.black,.3f); colors.fadeDuration=.08f; button.colors=colors; Text("Label",image.transform,Vector2.zero,size,label,20); return button; }
+        { var image=Image(name,parent,pos,size,color); image.raycastTarget=true; var outline=image.gameObject.AddComponent<Outline>(); outline.effectColor=new Color(1,1,1,.25f); outline.effectDistance=new Vector2(2,-2); var button=image.gameObject.AddComponent<Button>(); button.targetGraphic=image; button.transition=Selectable.Transition.ColorTint; SurexsVisualTheme.StyleButton(button,color); Text("Label",image.transform,Vector2.zero,size,label,20); return button; }
 
         private readonly struct SharedSet { public SharedSet(GameObject r,AudioManager a,ChartManager c,RhythmPrototypeController p){Root=r;Audio=a;Chart=c;Controller=p;} public GameObject Root{get;} public AudioManager Audio{get;} public ChartManager Chart{get;} public RhythmPrototypeController Controller{get;} }
         private readonly struct PlayerSet { public PlayerSet(RhythmJudge j,TileSpawner t,ScoreManager s,PlayerSession session){Judge=j;Tiles=t;Score=s;Session=session;} public RhythmJudge Judge{get;} public TileSpawner Tiles{get;} public ScoreManager Score{get;} public PlayerSession Session{get;} }

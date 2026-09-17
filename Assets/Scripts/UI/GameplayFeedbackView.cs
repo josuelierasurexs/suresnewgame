@@ -30,7 +30,7 @@ namespace Surexs.DanceOff.UI
             judgmentLabel.color = ColorFor(result);
             judgmentRemaining = displaySeconds;
             judgmentGroup.alpha = 1f;
-            judgmentLabel.rectTransform.localScale = Vector3.one * 1.3f;
+            judgmentLabel.rectTransform.localScale = Vector3.one * (result == RhythmJudgmentResult.Miss ? 1.48f : 1.34f);
 
             if (!string.IsNullOrEmpty(milestone))
             {
@@ -94,10 +94,10 @@ namespace Surexs.DanceOff.UI
         {
             switch (result)
             {
-                case RhythmJudgmentResult.Perfect: return new Color(0.30f, 1f, 0.75f);
-                case RhythmJudgmentResult.Great: return new Color(0.25f, 0.75f, 1f);
-                case RhythmJudgmentResult.Good: return new Color(1f, 0.85f, 0.20f);
-                default: return new Color(1f, 0.30f, 0.35f);
+                case RhythmJudgmentResult.Perfect: return SurexsVisualTheme.Success;
+                case RhythmJudgmentResult.Great: return SurexsVisualTheme.Primary;
+                case RhythmJudgmentResult.Good: return SurexsVisualTheme.Accent;
+                default: return SurexsVisualTheme.Error;
             }
         }
     }
