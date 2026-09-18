@@ -7,6 +7,7 @@ namespace Surexs.DanceOff.Rhythm
 {
     public sealed class RhythmTileView : MonoBehaviour
     {
+        private const float FadeAfterHitSeconds = 0.175f;
         private static readonly Color LeftColor = new Color(0.20f, 0.68f, 1f, 1f);
         private static readonly Color CenterColor = new Color(1f, 0.78f, 0.18f, 1f);
         private static readonly Color RightColor = new Color(1f, 0.34f, 0.48f, 1f);
@@ -14,13 +15,14 @@ namespace Surexs.DanceOff.Rhythm
         private RectTransform rectTransform;
         private Image background;
         private Text label;
+        private CanvasGroup canvasGroup;
         private Color baseColor;
         private string baseLabel;
         private RhythmNoteStatus status;
 
         public static RhythmTileView Create(RectTransform parent)
         {
-            var tileObject = new GameObject("Rhythm Tile", typeof(RectTransform), typeof(Image), typeof(RhythmTileView));
+            var tileObject = new GameObject("Rhythm Tile", typeof(RectTransform), typeof(Image), typeof(CanvasGroup), typeof(RhythmTileView));
             var tileRect = tileObject.GetComponent<RectTransform>();
             tileRect.SetParent(parent, false);
             tileRect.sizeDelta = new Vector2(168f, 78f);
@@ -52,6 +54,8 @@ namespace Surexs.DanceOff.Rhythm
             rectTransform = GetComponent<RectTransform>();
             background = GetComponent<Image>();
             label = GetComponentInChildren<Text>();
+            canvasGroup = GetComponent<CanvasGroup>();
+            canvasGroup.alpha = 1f;
             baseColor = ColorFor(chartEvent.Direction);
             baseLabel = $"{SymbolFor(chartEvent.Direction)}  {chartEvent.Time:0.00}";
             status = RhythmNoteStatus.Pending;
@@ -63,6 +67,9 @@ namespace Surexs.DanceOff.Rhythm
         public void SetVisualPosition(float laneX, float y, double secondsFromHit)
         {
             rectTransform.anchoredPosition = new Vector2(laneX, y);
+            canvasGroup.alpha = secondsFromHit >= 0d
+                ? 1f
+                : Mathf.Clamp01(1f - (float)(-secondsFromHit / FadeAfterHitSeconds));
             if (status != RhythmNoteStatus.Pending)
             {
                 return;

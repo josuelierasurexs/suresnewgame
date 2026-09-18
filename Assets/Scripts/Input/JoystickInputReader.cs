@@ -41,7 +41,11 @@ namespace Surexs.DanceOff.Input
                 if (!warnedAboutMissingJoystick)
                 {
                     warnedAboutMissingJoystick = true;
-                    Debug.LogWarning($"[JoystickInputReader] No se encontró el joystick HID {config.joystickIndex + 1}; no se emitirán acciones de ritmo.", this);
+                    var target = string.IsNullOrWhiteSpace(config.deviceProduct)
+                        ? $"con índice {config.joystickIndex}"
+                        : $"'{config.deviceProduct}'";
+                    Debug.LogWarning($"[JoystickInputReader] No se encontró el joystick HID {target}; no se emitirán acciones de ritmo.", this);
+                    LogAvailableJoysticks();
                 }
                 ResolveBindings(null);
                 return;
@@ -50,8 +54,9 @@ namespace Surexs.DanceOff.Input
             warnedAboutMissingJoystick = false;
             if (resolvedJoystick != joystick) ResolveBindings(joystick);
 
-            var stick = joystick.stick != null ? joystick.stick.ReadValue() : Vector2.zero;
-            var hat = joystick.hatswitch != null ? joystick.hatswitch.ReadValue() : Vector2.zero;
+            var useVectorFallbacks = !config.useExplicitDirectionalPathsOnly;
+            var stick = useVectorFallbacks && joystick.stick != null ? joystick.stick.ReadValue() : Vector2.zero;
+            var hat = useVectorFallbacks && joystick.hatswitch != null ? joystick.hatswitch.ReadValue() : Vector2.zero;
             var threshold = Mathf.Clamp(config.axisThreshold, 0.1f, 0.95f);
 
             var nextStickLeft = stick.x <= -threshold;
@@ -80,7 +85,64 @@ namespace Surexs.DanceOff.Input
 
         private Joystick ResolveJoystick()
         {
+            if (!string.IsNullOrWhiteSpace(config.deviceProduct) ||
+                !string.IsNullOrWhiteSpace(config.deviceManufacturer))
+            {
+                for (var index = 0; index < Joystick.all.Count; index++)
+                {
+                    var candidate = Joystick.all[index];
+                    if (MatchesDescription(candidate, config.deviceProduct, config.deviceManufacturer))
+                    {
+                        return candidate;
+                    }
+                }
+
+                return null;
+            }
+
             return config.joystickIndex < Joystick.all.Count ? Joystick.all[config.joystickIndex] : null;
+        }
+
+        private static bool MatchesDescription(Joystick joystick, string product, string manufacturer)
+        {
+            var expectedProduct = product?.Trim();
+            var expectedManufacturer = manufacturer?.Trim();
+            var productMatches = string.IsNullOrWhiteSpace(expectedProduct) ||
+                                 ContainsEitherWay(joystick.description.product, expectedProduct) ||
+                                 ContainsEitherWay(joystick.displayName, expectedProduct) ||
+                                 ContainsEitherWay(joystick.layout, expectedProduct);
+            var actualManufacturer = joystick.description.manufacturer;
+            var manufacturerMatches = string.IsNullOrWhiteSpace(expectedManufacturer) ||
+                                      string.IsNullOrWhiteSpace(actualManufacturer) ||
+                                      ContainsEitherWay(actualManufacturer, expectedManufacturer);
+            return productMatches && manufacturerMatches;
+        }
+
+        private static bool ContainsEitherWay(string first, string second)
+        {
+            if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second)) return false;
+            return first.IndexOf(second, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   second.IndexOf(first, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private void LogAvailableJoysticks()
+        {
+            if (Joystick.all.Count == 0)
+            {
+                Debug.LogWarning("[JoystickInputReader] Input System no reporta ningún dispositivo Joystick.", this);
+                return;
+            }
+
+            var descriptions = new string[Joystick.all.Count];
+            for (var index = 0; index < Joystick.all.Count; index++)
+            {
+                var joystick = Joystick.all[index];
+                descriptions[index] = $"#{index}: manufacturer='{joystick.description.manufacturer}', " +
+                                      $"product='{joystick.description.product}', displayName='{joystick.displayName}', " +
+                                      $"layout='{joystick.layout}', deviceId={joystick.deviceId}";
+            }
+
+            Debug.LogWarning("[JoystickInputReader] Joysticks disponibles: " + string.Join(" | ", descriptions), this);
         }
 
         private void ResolveBindings(Joystick joystick)
@@ -94,7 +156,17 @@ namespace Surexs.DanceOff.Input
             ResolveButtons(joystick, config.centerButtonPaths, centerButtons);
             ResolveButtons(joystick, config.rightButtonPaths, rightButtons);
             Debug.Log($"[JoystickInputReader] Usando {joystick.description.manufacturer} {joystick.description.product} " +
-                      $"(layout {joystick.layout}, índice {config.joystickIndex}).", this);
+                      $"(layout {joystick.layout}, deviceId {joystick.deviceId}). Bindings: " +
+                      $"LEFT={ButtonPaths(leftButtons)}, CENTER={ButtonPaths(centerButtons)}, " +
+                      $"RIGHT={ButtonPaths(rightButtons)}.", this);
+        }
+
+        private static string ButtonPaths(List<ButtonControl> controls)
+        {
+            if (controls.Count == 0) return "NINGUNO";
+            var paths = new string[controls.Count];
+            for (var index = 0; index < controls.Count; index++) paths[index] = controls[index].path;
+            return string.Join(", ", paths);
         }
 
         private void ResolveButtons(Joystick joystick, string[] paths, List<ButtonControl> destination)

@@ -35,7 +35,10 @@ namespace Surexs.DanceOff.Gameplay
             }
 
             var points = scoreManager.Register(judgment.Result, comboManager.CurrentMultiplier);
-            feedbackView.ShowJudgment(judgment.Result, points, milestone);
+            var hitDirection = judgment.ChartEvent != null
+                ? (RhythmDirection?)judgment.ChartEvent.Direction
+                : null;
+            feedbackView.ShowJudgment(judgment.Result, points, milestone, hitDirection);
         }
 
         private void OnDestroy()

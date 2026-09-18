@@ -189,26 +189,49 @@ MonoBehaviour:
       message: UNSTOPPABLE!
     - combo: 75
       message: SUREXS LEGEND!
-  player1InputSource: 0
-  player2InputSource: 0
+  player1InputSource: 2
+  player2InputSource: 2
   player1GamepadIndex: 0
   player2GamepadIndex: 1
   player1GamepadAxisThreshold: 0.5
   player2GamepadAxisThreshold: 0.5
   player1Joystick:
     joystickIndex: 0
+    deviceProduct:
+    deviceManufacturer:
+    useExplicitDirectionalPathsOnly: 0
     axisThreshold: 0.5
     leftButtonPaths: []
     centerButtonPaths: []
     rightButtonPaths: []
     diagnosticLogging: 0
   player2Joystick:
-    joystickIndex: 1
+    joystickIndex: 0
+    deviceProduct: Nintendo Wireless Gamepad
+    deviceManufacturer: Nintendo
+    useExplicitDirectionalPathsOnly: 1
     axisThreshold: 0.5
-    leftButtonPaths: []
-    centerButtonPaths: []
-    rightButtonPaths: []
-    diagnosticLogging: 0
+    leftButtonPaths:
+    - hat/left
+    centerButtonPaths:
+    - hat/up
+    - hat/down
+    rightButtonPaths:
+    - hat/right
+    diagnosticLogging: 1
+  background1Player: {fileID: 2800000, guid: 4f9a4967b7b17fb49b3ce225dd747bd9, type: 3}
+  tileContainerTexture: {fileID: 2800000, guid: 7179a65505827b540a06e11b7ff259fb, type: 3}
+  player1Texture: {fileID: 2800000, guid: 05291939916e3fc4e87e0268360682a9, type: 3}
+  perfectTexture: {fileID: 2800000, guid: 07362fb50ae80e545a0d9bb92a1abe42, type: 3}
+  greatTexture: {fileID: 2800000, guid: 6a83a2539a5925a47bb89c3fc423dd39, type: 3}
+  goodTexture: {fileID: 2800000, guid: 78ef9f93e22f8c64badbf5ccad469a04, type: 3}
+  missTexture: {fileID: 2800000, guid: 66e96ec651e95784aa141cf8f772c83f, type: 3}
+  blueStarTexture: {fileID: 2800000, guid: 1f3444fd651e0ef4192790c873e7c11c, type: 3}
+  yellowStarTexture: {fileID: 2800000, guid: e7dda7aa9a35b024f9758e5c02ba4296, type: 3}
+  surexsLogo: {fileID: 21300000, guid: e8e629de42b8e0c4da4814cd07947614, type: 3}
+  background2Player: {fileID: 2800000, guid: 39af1b3311510024898aca909bb2c0a2, type: 3}
+  player2Texture: {fileID: 0}
+  brokerHeroLogoTexture: {fileID: 2800000, guid: 94a544d3b97ae3c46a04f696291cfe6b, type: 3}
   poseDuration: 0.35
   poseDefinitions:
   - id: neutral
