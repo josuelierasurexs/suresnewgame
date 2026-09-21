@@ -165,8 +165,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Surexs.DanceOff.Core::Surexs.DanceOff.Core.PhaseOneSceneBootstrap
   song: {fileID: 8300000, guid: d023565cf9276714aa18308dfe18fa28, type: 3}
   chart: {fileID: 4900000, guid: 0ce35ef589b08234186e9d67a82288f1, type: 3}
-  titleFont: {fileID: 12800000, guid: 860a44a1de8e7e04e96de74d5e4f06ca, type: 3}
-  bodyFont: {fileID: 12800000, guid: aa60251632860fe42b7a984028553af8, type: 3}
   gameplayConfig:
     perfectWindow: 0.05
     greatWindow: 0.1
@@ -191,7 +189,9 @@ MonoBehaviour:
       message: UNSTOPPABLE!
     - combo: 75
       message: SUREXS LEGEND!
-  player1InputSource: 2
+  titleFont: {fileID: 12800000, guid: 860a44a1de8e7e04e96de74d5e4f06ca, type: 3}
+  bodyFont: {fileID: 12800000, guid: aa60251632860fe42b7a984028553af8, type: 3}
+  player1InputSource: 0
   player2InputSource: 2
   player1GamepadIndex: 0
   player2GamepadIndex: 1
@@ -199,8 +199,8 @@ MonoBehaviour:
   player2GamepadAxisThreshold: 0.5
   player1Joystick:
     joystickIndex: 0
-    deviceProduct:
-    deviceManufacturer:
+    deviceProduct: 
+    deviceManufacturer: 
     useExplicitDirectionalPathsOnly: 0
     axisThreshold: 0.5
     leftButtonPaths: []
@@ -251,51 +251,26 @@ MonoBehaviour:
     bodyColor: {r: 0.26, g: 0.8, b: 0.65, a: 1}
     leftArmAngle: 65
     rightArmAngle: -10
-  - id: typing
-    displayName: Typing
+  - id: laptop
+    displayName: Laptop
     bodyColor: {r: 0.48, g: 0.58, b: 0.95, a: 1}
     leftArmAngle: -55
     rightArmAngle: 55
-  - id: presentation
-    displayName: Presentation
+  - id: tablet
+    displayName: Tablet
     bodyColor: {r: 0.95, g: 0.48, b: 0.38, a: 1}
     leftArmAngle: 125
     rightArmAngle: -25
-  - id: coffee
-    displayName: Coffee
-    bodyColor: {r: 0.62, g: 0.42, b: 0.25, a: 1}
-    leftArmAngle: 25
-    rightArmAngle: -75
-  - id: documents
-    displayName: Documents
-    bodyColor: {r: 0.92, g: 0.72, b: 0.25, a: 1}
-    leftArmAngle: -20
-    rightArmAngle: 70
-  - id: document
-    displayName: Documents
-    bodyColor: {r: 0.92, g: 0.72, b: 0.25, a: 1}
-    leftArmAngle: -20
-    rightArmAngle: 70
-  - id: meeting
-    displayName: Meeting
-    bodyColor: {r: 0.75, g: 0.42, b: 0.9, a: 1}
-    leftArmAngle: 115
-    rightArmAngle: -115
-  - id: thinking
-    displayName: Thinking
-    bodyColor: {r: 0.38, g: 0.72, b: 0.86, a: 1}
-    leftArmAngle: 80
-    rightArmAngle: -5
-  - id: celebration
-    displayName: Celebration
-    bodyColor: {r: 0.98, g: 0.55, b: 0.72, a: 1}
+  - id: combo
+    displayName: Combo
+    bodyColor: {r: 0.98, g: 0.78, b: 0.2, a: 1}
     leftArmAngle: 145
     rightArmAngle: -145
-  - id: mouse
-    displayName: Mouse
-    bodyColor: {r: 0.42, g: 0.82, b: 0.48, a: 1}
-    leftArmAngle: 10
-    rightArmAngle: -50
+  - id: miss
+    displayName: Miss
+    bodyColor: {r: 1, g: 0.25, b: 0.38, a: 1}
+    leftArmAngle: 15
+    rightArmAngle: -15
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

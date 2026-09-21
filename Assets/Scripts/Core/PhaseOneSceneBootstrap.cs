@@ -56,16 +56,13 @@ namespace Surexs.DanceOff.Core
         {
             new PoseData("neutral", "Neutral", new Color(.22f,.67f,.92f), 15f,-15f),
             new PoseData("phone", "Phone", new Color(.26f,.80f,.65f), 65f,-10f),
-            new PoseData("typing", "Typing", new Color(.48f,.58f,.95f),-55f,55f),
-            new PoseData("presentation", "Presentation", new Color(.95f,.48f,.38f),125f,-25f),
-            new PoseData("coffee", "Coffee", new Color(.62f,.42f,.25f),25f,-75f),
-            new PoseData("documents", "Documents", new Color(.92f,.72f,.25f),-20f,70f),
-            new PoseData("document", "Documents", new Color(.92f,.72f,.25f),-20f,70f),
-            new PoseData("meeting", "Meeting", new Color(.75f,.42f,.90f),115f,-115f),
-            new PoseData("thinking", "Thinking", new Color(.38f,.72f,.86f),80f,-5f),
-            new PoseData("celebration", "Celebration", new Color(.98f,.55f,.72f),145f,-145f),
-            new PoseData("mouse", "Mouse", new Color(.42f,.82f,.48f),10f,-50f)
+            new PoseData("laptop", "Laptop", new Color(.48f,.58f,.95f),-55f,55f),
+            new PoseData("tablet", "Tablet", new Color(.95f,.48f,.38f),125f,-25f),
+            new PoseData("combo", "Combo", new Color(.98f,.78f,.20f),145f,-145f),
+            new PoseData("miss", "Miss", new Color(1f,.25f,.38f),15f,-15f)
         };
+
+        private RawImage soloPlayerArtwork;
 
         private void Awake()
         {
@@ -116,7 +113,7 @@ namespace Surexs.DanceOff.Core
             for (var i=0;i<lanes.Length;i++)
                 Raw("Solo Tile Container "+i,canvas,new Vector2(lanes[i],0),new Vector2(320,720),tileContainerTexture);
 
-            Raw("Solo Player Artwork",canvas,new Vector2(470,-35),new Vector2(620,615),player1Texture);
+            soloPlayerArtwork=Raw("Solo Player Artwork",canvas,new Vector2(470,-35),new Vector2(620,615),player1Texture);
             Raw("Blue Star",canvas,new Vector2(205,235),new Vector2(76,76),blueStarTexture);
             Raw("Yellow Star",canvas,new Vector2(775,-25),new Vector2(64,64),yellowStarTexture);
 
@@ -288,7 +285,13 @@ namespace Surexs.DanceOff.Core
             feedback.Configure(judgmentImage,points,milestone,perfectTexture,greatTexture,goodTexture,missTexture,starBurst);
             go.AddComponent<JudgmentProcessor>().Configure(judge,score,combo,feedback);
             var poses=go.AddComponent<PoseController>(); poses.Configure(poseDefinitions,visual.Body,visual.LeftArm,visual.RightArm,visual.BodyImage,visual.PoseLabel);
-            var player=go.AddComponent<PlayerController>(); player.Configure(judge,poses,poseDuration);
+            SoloCharacterAnimationView characterAnimation=null;
+            if (soloRedesign && soloPlayerArtwork != null)
+            {
+                characterAnimation=go.AddComponent<SoloCharacterAnimationView>();
+                characterAnimation.Configure(soloPlayerArtwork);
+            }
+            var player=go.AddComponent<PlayerController>(); player.Configure(judge,poses,poseDuration,combo,characterAnimation);
             var tileRootOffset=tileRoot.anchoredPosition;
             var tiles=go.AddComponent<TileSpawner>(); tiles.Configure(shared.Audio,shared.Chart,tileRoot,judge,
                 lanes[0]-tileRootOffset.x,lanes[1]-tileRootOffset.x,lanes[2]-tileRootOffset.x,hitY-tileRootOffset.y);
