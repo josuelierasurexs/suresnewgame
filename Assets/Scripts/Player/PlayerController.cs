@@ -11,7 +11,7 @@ namespace Surexs.DanceOff.Player
         private float poseDuration;
         private float poseTimeRemaining;
         private ComboManager comboManager;
-        private SoloCharacterAnimationView soloAnimation;
+        private SoloCharacterAnimationView characterAnimation;
         private int observedMultiplier = 1;
 
         public void Configure(RhythmJudge judge, PoseController poses, float duration,
@@ -22,14 +22,14 @@ namespace Surexs.DanceOff.Player
             poseController = poses;
             poseDuration = Mathf.Max(0.05f, duration);
             comboManager = combo;
-            soloAnimation = characterAnimation;
+            this.characterAnimation = characterAnimation;
             observedMultiplier = comboManager != null ? comboManager.CurrentMultiplier : 1;
             rhythmJudge.NoteJudged += OnNoteJudged;
         }
 
         private void Update()
         {
-            if (soloAnimation != null) return;
+            if (characterAnimation != null) return;
             if (poseTimeRemaining <= 0f)
             {
                 return;
@@ -46,24 +46,24 @@ namespace Surexs.DanceOff.Player
         {
             if (!judgment.IsHit)
             {
-                if (soloAnimation != null)
+                if (characterAnimation != null)
                 {
                     poseTimeRemaining = 0f;
                     observedMultiplier = 1;
                     poseController.ShowNeutral();
-                    soloAnimation.PlayMiss();
+                    characterAnimation.PlayMiss();
                 }
                 return;
             }
 
             poseController.ShowPose(judgment.ChartEvent.Pose);
-            if (soloAnimation != null)
+            if (characterAnimation != null)
             {
                 var multiplier = comboManager != null ? comboManager.CurrentMultiplier : 1;
-                soloAnimation.PlayPose(judgment.ChartEvent.Pose, multiplier);
-                if (multiplier > observedMultiplier) soloAnimation.PlayCombo(multiplier);
+                characterAnimation.PlayPose(judgment.ChartEvent.Pose, multiplier);
+                if (multiplier > observedMultiplier) characterAnimation.PlayCombo(multiplier);
                 observedMultiplier = multiplier;
-                Debug.Log($"[PlayerController] Animación Solo '{soloAnimation.CurrentState}' por {judgment.Result} a x{soloAnimation.PlaybackSpeed:0.##}.", this);
+                Debug.Log($"[PlayerController] Animación '{characterAnimation.CurrentState}' por {judgment.Result} a x{characterAnimation.PlaybackSpeed:0.##}.", this);
                 return;
             }
 
@@ -81,7 +81,7 @@ namespace Surexs.DanceOff.Player
             poseTimeRemaining = 0f;
             observedMultiplier = 1;
             poseController.ShowNeutral();
-            if (soloAnimation != null) soloAnimation.ResetVisual();
+            if (characterAnimation != null) characterAnimation.ResetVisual();
         }
 
         private void DisconnectJudge()

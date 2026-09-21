@@ -192,7 +192,7 @@ MonoBehaviour:
   titleFont: {fileID: 12800000, guid: 860a44a1de8e7e04e96de74d5e4f06ca, type: 3}
   bodyFont: {fileID: 12800000, guid: aa60251632860fe42b7a984028553af8, type: 3}
   player1InputSource: 0
-  player2InputSource: 2
+  player2InputSource: 0
   player1GamepadIndex: 0
   player2GamepadIndex: 1
   player1GamepadAxisThreshold: 0.5

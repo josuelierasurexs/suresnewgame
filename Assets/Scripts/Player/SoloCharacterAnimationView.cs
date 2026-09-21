@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Surexs.DanceOff.Player
 {
     /// <summary>
-    /// Reproduce las secuencias visuales finales de Player 1 en modo Solo.
+    /// Reproduce las secuencias visuales finales de un personaje.
     /// No participa en el timing, el judge ni el score.
     /// </summary>
     public sealed class SoloCharacterAnimationView : MonoBehaviour
@@ -24,6 +24,7 @@ namespace Surexs.DanceOff.Player
             new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private RawImage target;
+        private RawImage glowTarget;
         private Texture2D[] activeFrames = Array.Empty<Texture2D>();
         private string activeState = Neutral;
         private string requestedLoopState = Neutral;
@@ -39,14 +40,16 @@ namespace Surexs.DanceOff.Player
         public string CurrentState => activeState;
         public float PlaybackSpeed => playbackSpeed;
 
-        public void Configure(RawImage characterImage)
+        public void Configure(RawImage characterImage, string resourcesPath = "Animations/Player1",
+            RawImage characterGlow = null)
         {
             target = characterImage;
+            glowTarget = characterGlow;
             clips.Clear();
             for (var index = 0; index < SupportedStates.Length; index++)
             {
                 var state = SupportedStates[index];
-                var frames = Resources.LoadAll<Texture2D>($"Animations/Player1/{state}");
+                var frames = Resources.LoadAll<Texture2D>($"{resourcesPath}/{state}");
                 Array.Sort(frames, (left, right) => string.CompareOrdinal(left.name, right.name));
                 clips[state] = frames;
                 if (frames.Length == 0) WarnMissingClip(state);
@@ -123,14 +126,14 @@ namespace Surexs.DanceOff.Player
                 frameIndex++;
                 if (frameIndex < activeFrames.Length)
                 {
-                    target.texture = activeFrames[frameIndex];
+                    ShowFrame(activeFrames[frameIndex]);
                     continue;
                 }
 
                 if (playbackMode == PlaybackMode.Loop)
                 {
                     frameIndex = 0;
-                    target.texture = activeFrames[0];
+                    ShowFrame(activeFrames[0]);
                     continue;
                 }
 
@@ -183,10 +186,17 @@ namespace Surexs.DanceOff.Player
             frameTime = 0f;
             if (target != null)
             {
-                target.texture = frames[0];
                 target.color = Color.white;
                 target.enabled = true;
             }
+            if (glowTarget != null) glowTarget.enabled = true;
+            ShowFrame(frames[0]);
+        }
+
+        private void ShowFrame(Texture2D frame)
+        {
+            if (target != null) target.texture = frame;
+            if (glowTarget != null) glowTarget.texture = frame;
         }
 
         private string ResolveLoopState(string poseId)
@@ -205,7 +215,7 @@ namespace Surexs.DanceOff.Player
         private void WarnMissingClip(string state)
         {
             if (missingClipWarnings.Add(state))
-                Debug.LogWarning($"[SoloCharacterAnimationView] No se encontraron frames para '{state}'.", this);
+                Debug.LogWarning($"[CharacterAnimationView] No se encontraron frames para '{state}'.", this);
         }
 
         private enum PlaybackMode

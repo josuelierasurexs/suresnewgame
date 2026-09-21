@@ -63,6 +63,10 @@ namespace Surexs.DanceOff.Core
         };
 
         private RawImage soloPlayerArtwork;
+        private RawImage versusPlayer1Artwork;
+        private RawImage versusPlayer2Artwork;
+        private RawImage versusPlayer1Glow;
+        private RawImage versusPlayer2Glow;
 
         private void Awake()
         {
@@ -144,15 +148,21 @@ namespace Surexs.DanceOff.Core
 
             var p1Lanes=new[] {-760f,-550f,-340f};
             var p2Lanes=new[] {340f,550f,760f};
+            versusPlayer1Glow=CharacterGlow("Player 1 Character Glow",canvas,new Vector2(-550,245),new Vector2(358,353),new Color(.05f,.66f,1f,.72f));
+            versusPlayer2Glow=CharacterGlow("Player 2 Character Glow",canvas,new Vector2(550,245),new Vector2(358,353),new Color(1f,.16f,.34f,.72f));
+            for (var i=0;i<3;i++)
+            {
+                NeonBackdrop("Player 1 Tile Glow "+i,canvas,new Vector2(p1Lanes[i],-155f),new Vector2(202,532),new Color(.05f,.66f,1f,1f));
+                NeonBackdrop("Player 2 Tile Glow "+i,canvas,new Vector2(p2Lanes[i],-155f),new Vector2(202,532),new Color(1f,.16f,.34f,1f));
+            }
             for (var i=0;i<3;i++)
             {
                 Raw("Player 1 Tile Container "+i,canvas,new Vector2(p1Lanes[i],-155f),new Vector2(190,520),tileContainerTexture);
                 Raw("Player 2 Tile Container "+i,canvas,new Vector2(p2Lanes[i],-155f),new Vector2(190,520),tileContainerTexture);
             }
 
-            Raw("Player 1 Artwork",canvas,new Vector2(-550,245),new Vector2(340,335),player1Texture);
-            var p2Artwork=Raw("Player 2 Artwork",canvas,new Vector2(550,245),new Vector2(340,335),player2Texture != null ? player2Texture : player1Texture);
-            if (player2Texture == null) p2Artwork.color=new Color(1f,.64f,.78f,1f);
+            versusPlayer1Artwork=Raw("Player 1 Artwork",canvas,new Vector2(-550,245),new Vector2(340,335),player1Texture);
+            versusPlayer2Artwork=Raw("Player 2 Artwork",canvas,new Vector2(550,245),new Vector2(340,335),player2Texture);
 
             var brandPanel=Image("Central Brand Backdrop",canvas,new Vector2(0,95),new Vector2(310,180),new Color(.01f,.06f,.14f,.95f));
             SurexsVisualTheme.ApplyRounded(brandPanel);
@@ -181,7 +191,6 @@ namespace Surexs.DanceOff.Core
             WarnMissingVersusAsset(missTexture,nameof(missTexture));
             WarnMissingVersusAsset(blueStarTexture,nameof(blueStarTexture));
             WarnMissingVersusAsset(yellowStarTexture,nameof(yellowStarTexture));
-            if (player2Texture == null) Debug.LogWarning("[Bootstrap] No existe player2.png; se utiliza player1.png tintado como fallback visual para PLAYER 2.",this);
         }
 
         private void WarnMissingVersusAsset(Object asset,string field)
@@ -286,10 +295,25 @@ namespace Surexs.DanceOff.Core
             go.AddComponent<JudgmentProcessor>().Configure(judge,score,combo,feedback);
             var poses=go.AddComponent<PoseController>(); poses.Configure(poseDefinitions,visual.Body,visual.LeftArm,visual.RightArm,visual.BodyImage,visual.PoseLabel);
             SoloCharacterAnimationView characterAnimation=null;
-            if (soloRedesign && soloPlayerArtwork != null)
+            RawImage characterArtwork=null;
+            RawImage characterGlow=null;
+            var animationResources="Animations/Player1";
+            if (soloRedesign) characterArtwork=soloPlayerArtwork;
+            else if (layout==PlayerVisualLayout.VersusLeft)
+            {
+                characterArtwork=versusPlayer1Artwork;
+                characterGlow=versusPlayer1Glow;
+            }
+            else if (layout==PlayerVisualLayout.VersusRight)
+            {
+                characterArtwork=versusPlayer2Artwork;
+                characterGlow=versusPlayer2Glow;
+                animationResources="Animations/Player2";
+            }
+            if (characterArtwork != null)
             {
                 characterAnimation=go.AddComponent<SoloCharacterAnimationView>();
-                characterAnimation.Configure(soloPlayerArtwork);
+                characterAnimation.Configure(characterArtwork,animationResources,characterGlow);
             }
             var player=go.AddComponent<PlayerController>(); player.Configure(judge,poses,poseDuration,combo,characterAnimation);
             var tileRootOffset=tileRoot.anchoredPosition;
@@ -460,6 +484,29 @@ namespace Surexs.DanceOff.Core
         { var image=Image(name,parent,pos,size,color); image.raycastTarget=true; var outline=image.gameObject.AddComponent<Outline>(); outline.effectColor=new Color(1,1,1,.25f); outline.effectDistance=new Vector2(2,-2); var button=image.gameObject.AddComponent<Button>(); button.targetGraphic=image; button.transition=Selectable.Transition.ColorTint; SurexsVisualTheme.StyleButton(button,color); Text("Label",image.transform,Vector2.zero,size,label,20); return button; }
         private static Button TextureButton(string name,Transform parent,Vector2 pos,Vector2 size,string label,Texture texture)
         { var image=Raw(name,parent,pos,size,texture); image.raycastTarget=true; var button=image.gameObject.AddComponent<Button>(); button.targetGraphic=image; button.transition=Selectable.Transition.ColorTint; SurexsVisualTheme.StyleButton(button,Color.white); var text=Text("Label",image.transform,Vector2.zero,new Vector2(size.x*.76f,size.y*.6f),label,34); text.font=SurexsVisualTheme.BodyFont; return button; }
+
+        private static void NeonBackdrop(string name,Transform parent,Vector2 pos,Vector2 size,Color neon)
+        {
+            var scales=new[] {1.10f,1.06f,1.025f};
+            var alphas=new[] {.035f,.065f,.12f};
+            for (var i=0;i<scales.Length;i++)
+            {
+                var layer=Image(name+" "+i,parent,pos,size*scales[i],new Color(neon.r,neon.g,neon.b,alphas[i]));
+                SurexsVisualTheme.ApplyRounded(layer);
+                layer.raycastTarget=false;
+            }
+        }
+
+        private static RawImage CharacterGlow(string name,Transform parent,Vector2 pos,Vector2 size,Color color)
+        {
+            var glow=Raw(name,parent,pos,size,null);
+            glow.color=color;
+            glow.raycastTarget=false;
+            var outline=glow.gameObject.AddComponent<Outline>();
+            outline.effectColor=new Color(color.r,color.g,color.b,.42f);
+            outline.effectDistance=new Vector2(7f,-7f);
+            return glow;
+        }
 
         private readonly struct SharedSet { public SharedSet(GameObject r,AudioManager a,ChartManager c,RhythmPrototypeController p){Root=r;Audio=a;Chart=c;Controller=p;} public GameObject Root{get;} public AudioManager Audio{get;} public ChartManager Chart{get;} public RhythmPrototypeController Controller{get;} }
         private readonly struct PlayerSet { public PlayerSet(RhythmJudge j,TileSpawner t,ScoreManager s,PlayerSession session){Judge=j;Tiles=t;Score=s;Session=session;} public RhythmJudge Judge{get;} public TileSpawner Tiles{get;} public ScoreManager Score{get;} public PlayerSession Session{get;} }
