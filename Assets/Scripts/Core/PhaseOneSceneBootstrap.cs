@@ -18,6 +18,9 @@ namespace Surexs.DanceOff.Core
         [SerializeField] private TextAsset chart;
         private GameMode gameMode => GameSession.SelectedMode;
         [SerializeField] private RhythmGameplayConfig gameplayConfig = new RhythmGameplayConfig();
+        [Header("Typography")]
+        [SerializeField] private Font titleFont;
+        [SerializeField] private Font bodyFont;
         [Header("Input Sources")]
         [SerializeField] private RhythmInputSourceType player1InputSource = RhythmInputSourceType.Keyboard;
         [SerializeField] private RhythmInputSourceType player2InputSource = RhythmInputSourceType.Keyboard;
@@ -42,6 +45,12 @@ namespace Surexs.DanceOff.Core
         [SerializeField] private Texture background2Player;
         [SerializeField] private Texture player2Texture;
         [SerializeField] private Texture brokerHeroLogoTexture;
+        [Header("Results Graphics")]
+        [SerializeField] private Texture resultsCharacterTexture;
+        [SerializeField] private Texture resultsContainerTexture;
+        [SerializeField] private Texture resultsRetryButtonTexture;
+        [SerializeField] private Texture resultsMenuButtonTexture;
+        [SerializeField] private Texture resultsSurexsLogoTexture;
         [SerializeField, Min(0.05f)] private float poseDuration = 0.35f;
         [SerializeField] private PoseData[] poseDefinitions =
         {
@@ -60,6 +69,7 @@ namespace Surexs.DanceOff.Core
 
         private void Awake()
         {
+            SurexsVisualTheme.ConfigureFonts(titleFont,bodyFont);
             if (!gameplayConfig.IsValid(out var error)) { Debug.LogError(error, this); return; }
             CreateCamera();
             CreateEventSystem();
@@ -212,14 +222,16 @@ namespace Surexs.DanceOff.Core
                 hitZones[i]=Image(name+" Hit "+i, canvas, new Vector2(lanes[i],hitY), hitSize, new Color(.12f,.86f,.48f,.72f));
                 SurexsVisualTheme.ApplyRounded(hitZones[i]);
                 var hitOutline=hitZones[i].gameObject.AddComponent<Outline>(); hitOutline.effectColor=new Color(.45f,1f,.72f,.9f); hitOutline.effectDistance=new Vector2(3,-3);
-                Text(name+" Label "+i, canvas, new Vector2(lanes[i],soloRedesign ? 350f : 125f), new Vector2(210,34), labels[i], soloRedesign ? 22 : 16);
+                var laneLabel=Text(name+" Label "+i, canvas, new Vector2(lanes[i],soloRedesign ? 350f : 125f), new Vector2(210,34), labels[i], soloRedesign ? 22 : 16);
+                laneLabel.font=SurexsVisualTheme.TitleFont;
                 var key=playerTwo ? (i==0 ? "←" : i==1 ? "↑ / ↓" : "→") : (i==0 ? "A" : i==1 ? "W / S" : "D");
                 var keyY=soloRedesign ? -420f : -450f;
                 var keyWidth=soloRedesign ? 112f : 105f;
                 var keyPanel=Image(name+" Key "+i,canvas,new Vector2(lanes[i],keyY),new Vector2(keyWidth,46),new Color(.02f,.18f,.34f,.94f));
                 SurexsVisualTheme.ApplyRounded(keyPanel);
                 var keyOutline=keyPanel.gameObject.AddComponent<Outline>(); keyOutline.effectColor=new Color(accent.r,accent.g,accent.b,.95f); keyOutline.effectDistance=new Vector2(2,-2);
-                Text(name+" Key Label "+i,keyPanel.transform,Vector2.zero,new Vector2(keyWidth,46),key,soloRedesign ? 20 : 18);
+                var keyLabel=Text(name+" Key Label "+i,keyPanel.transform,Vector2.zero,new Vector2(keyWidth,46),key,soloRedesign ? 20 : 18);
+                keyLabel.font=SurexsVisualTheme.BodyFont;
             }
             RawImage judgmentImage=null; Text points=null;
             Text scoreLabel=null; Text comboLabel=null; Text songLabel=null; Text statsLabel=null; Image progressFill=null;
@@ -230,6 +242,8 @@ namespace Surexs.DanceOff.Core
             {
                 scoreLabel=Text("Solo Score",canvas,new Vector2(750,330),new Vector2(300,170),"",27);
                 comboLabel=Text("Solo Combo",canvas,new Vector2(750,155),new Vector2(340,220),"",30);
+                scoreLabel.font=SurexsVisualTheme.BodyFont;
+                comboLabel.font=SurexsVisualTheme.BodyFont;
                 songLabel=Text("Solo Song",canvas,new Vector2(720,475),new Vector2(360,90),"",17);
                 songLabel.alignment=TextAnchor.MiddleLeft;
                 var statsPanel=Image("Solo Stats Panel",canvas,new Vector2(175,-505),new Vector2(760,50),new Color(.01f,.13f,.28f,.92f));
@@ -249,6 +263,8 @@ namespace Surexs.DanceOff.Core
                 SurexsVisualTheme.ApplyRounded(card);
                 scoreLabel=Text(name+" Score",card.transform,new Vector2(-75,-17),new Vector2(230,90),"",19);
                 comboLabel=Text(name+" Combo",card.transform,new Vector2(185,-17),new Vector2(220,100),"",20);
+                scoreLabel.font=SurexsVisualTheme.BodyFont;
+                comboLabel.font=SurexsVisualTheme.BodyFont;
                 visual=VisualVersusCard(card.transform,name,accent);
 
                 var statsPanel=Image(name+" Stats Panel",canvas,new Vector2(x,-510),new Vector2(680,42),new Color(.01f,.13f,.28f,.92f));
@@ -321,21 +337,44 @@ namespace Surexs.DanceOff.Core
             return player == "P1" ? "P1: A / W-S / D" : "P2: ← / ↑-↓ / →";
         }
 
-        private static ResultsView CreateResultsView(Transform canvas)
+        private ResultsView CreateResultsView(Transform canvas)
         {
-            var panel=Image("Results Panel",canvas,Vector2.zero,new Vector2(1920,1080),SurexsVisualTheme.Background);
-            Image("Results Glow",panel.transform,new Vector2(0,470),new Vector2(1920,140),SurexsVisualTheme.BackgroundGlow);
-            Image("Results Accent",panel.transform,new Vector2(0,418),new Vector2(560,6),SurexsVisualTheme.Accent);
-            var p1Card=Image("P1 Results Card",panel.transform,new Vector2(-430,45),new Vector2(650,650),SurexsVisualTheme.SurfaceRaised);
-            var p2Card=Image("P2 Results Card",panel.transform,new Vector2(430,45),new Vector2(650,650),new Color(.15f,.07f,.18f,.98f));
-            SurexsVisualTheme.ApplyRounded(p1Card); SurexsVisualTheme.ApplyRounded(p2Card);
-            var title=Text("Results Title",panel.transform,new Vector2(0,400),new Vector2(1200,90),"RESULTADOS",48);
-            var p1=Text("P1 Results",panel.transform,new Vector2(-430,60),new Vector2(620,650),"",28);
-            var p2=Text("P2 Results",panel.transform,new Vector2(430,60),new Vector2(620,650),"",28);
-            var retry=Button("Rematch",panel.transform,new Vector2(-180,-420),new Vector2(300,75),"REVANCHA",SurexsVisualTheme.Success);
-            var menu=Button("Menu",panel.transform,new Vector2(180,-420),new Vector2(300,75),"MENU",SurexsVisualTheme.Primary);
-            var view=panel.gameObject.AddComponent<ResultsView>(); view.Configure(panel.gameObject,title,p1,p2,p1Card.gameObject,p2Card.gameObject,retry,menu);
+            var panel=Raw("Results Panel",canvas,Vector2.zero,new Vector2(1920,1080),background2Player);
+            Stretch(panel.rectTransform);
+            Raw("Results Broker Hero Logo",panel.transform,new Vector2(-745,405),new Vector2(390,195),brokerHeroLogoTexture);
+            Raw("Results Character",panel.transform,new Vector2(-720,-120),new Vector2(400,695),resultsCharacterTexture);
+            Raw("Results Surexs Logo",panel.transform,new Vector2(785,-475),new Vector2(250,57),resultsSurexsLogoTexture);
+
+            var p1Card=Raw("P1 Results Card",panel.transform,new Vector2(125,35),new Vector2(650,725),resultsContainerTexture);
+            var p2Card=Raw("P2 Results Card",panel.transform,new Vector2(420,35),new Vector2(560,625),resultsContainerTexture);
+            var title=Text("Results Title",panel.transform,new Vector2(125,325),new Vector2(520,82),"RESULTADOS",48);
+            var p1=Text("P1 Results",p1Card.transform,new Vector2(0,-85),new Vector2(540,520),"",30);
+            var p2=Text("P2 Results",p2Card.transform,new Vector2(0,-58),new Vector2(470,450),"",26);
+            var p1Header=Text("P1 Results Header",p1Card.transform,new Vector2(0,220),new Vector2(460,48),"PLAYER 1",30);
+            var p2Header=Text("P2 Results Header",p2Card.transform,new Vector2(0,255),new Vector2(470,42),"PLAYER 2",23);
+            var retry=TextureButton("Rematch",panel.transform,new Vector2(-75,-435),new Vector2(390,120),"REVANCHA",resultsRetryButtonTexture);
+            var menu=TextureButton("Menu",panel.transform,new Vector2(345,-435),new Vector2(390,120),"MENU",resultsMenuButtonTexture);
+            title.font=SurexsVisualTheme.TitleFont;
+            p1.font=SurexsVisualTheme.BodyFont;
+            p2.font=SurexsVisualTheme.BodyFont;
+            p1Header.font=SurexsVisualTheme.TitleFont;
+            p2Header.font=SurexsVisualTheme.TitleFont;
+            retry.GetComponentInChildren<Text>().font=SurexsVisualTheme.BodyFont;
+            menu.GetComponentInChildren<Text>().font=SurexsVisualTheme.BodyFont;
+            var view=panel.gameObject.AddComponent<ResultsView>(); view.Configure(panel.gameObject,title,p1,p2,p1Header,p2Header,p1Card.gameObject,p2Card.gameObject,retry,menu);
+            WarnMissingResultsAsset(background2Player,nameof(background2Player));
+            WarnMissingResultsAsset(brokerHeroLogoTexture,nameof(brokerHeroLogoTexture));
+            WarnMissingResultsAsset(resultsCharacterTexture,nameof(resultsCharacterTexture));
+            WarnMissingResultsAsset(resultsContainerTexture,nameof(resultsContainerTexture));
+            WarnMissingResultsAsset(resultsRetryButtonTexture,nameof(resultsRetryButtonTexture));
+            WarnMissingResultsAsset(resultsMenuButtonTexture,nameof(resultsMenuButtonTexture));
+            WarnMissingResultsAsset(resultsSurexsLogoTexture,nameof(resultsSurexsLogoTexture));
             return view;
+        }
+
+        private void WarnMissingResultsAsset(Object asset,string field)
+        {
+            if (asset == null) Debug.LogWarning($"[Bootstrap] Falta el asset visual de resultados '{field}'.",this);
         }
 
         private static void CreateEventSystem()
@@ -416,6 +455,8 @@ namespace Surexs.DanceOff.Core
         { var go=new GameObject(name,typeof(RectTransform),typeof(Text)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var t=go.GetComponent<Text>(); t.font=SurexsVisualTheme.Font; t.fontSize=fontSize; t.fontStyle=FontStyle.Bold; t.alignment=TextAnchor.MiddleCenter; t.color=SurexsVisualTheme.TextPrimary; t.text=value; t.raycastTarget=false; return t; }
         private static Button Button(string name,Transform parent,Vector2 pos,Vector2 size,string label,Color color)
         { var image=Image(name,parent,pos,size,color); image.raycastTarget=true; var outline=image.gameObject.AddComponent<Outline>(); outline.effectColor=new Color(1,1,1,.25f); outline.effectDistance=new Vector2(2,-2); var button=image.gameObject.AddComponent<Button>(); button.targetGraphic=image; button.transition=Selectable.Transition.ColorTint; SurexsVisualTheme.StyleButton(button,color); Text("Label",image.transform,Vector2.zero,size,label,20); return button; }
+        private static Button TextureButton(string name,Transform parent,Vector2 pos,Vector2 size,string label,Texture texture)
+        { var image=Raw(name,parent,pos,size,texture); image.raycastTarget=true; var button=image.gameObject.AddComponent<Button>(); button.targetGraphic=image; button.transition=Selectable.Transition.ColorTint; SurexsVisualTheme.StyleButton(button,Color.white); var text=Text("Label",image.transform,Vector2.zero,new Vector2(size.x*.76f,size.y*.6f),label,34); text.font=SurexsVisualTheme.BodyFont; return button; }
 
         private readonly struct SharedSet { public SharedSet(GameObject r,AudioManager a,ChartManager c,RhythmPrototypeController p){Root=r;Audio=a;Chart=c;Controller=p;} public GameObject Root{get;} public AudioManager Audio{get;} public ChartManager Chart{get;} public RhythmPrototypeController Controller{get;} }
         private readonly struct PlayerSet { public PlayerSet(RhythmJudge j,TileSpawner t,ScoreManager s,PlayerSession session){Judge=j;Tiles=t;Score=s;Session=session;} public RhythmJudge Judge{get;} public TileSpawner Tiles{get;} public ScoreManager Score{get;} public PlayerSession Session{get;} }

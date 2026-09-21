@@ -44,3 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3501729c3ed749f89989c676303c4a6c, type: 3}
   m_Name:
   m_EditorClassIdentifier: Surexs.DanceOff.Core::Surexs.DanceOff.Core.MainMenuSceneBootstrap
+  titleFont: {fileID: 12800000, guid: 860a44a1de8e7e04e96de74d5e4f06ca, type: 3}
+  bodyFont: {fileID: 12800000, guid: aa60251632860fe42b7a984028553af8, type: 3}

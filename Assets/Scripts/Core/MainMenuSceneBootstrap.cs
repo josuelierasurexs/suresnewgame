@@ -8,14 +8,20 @@ namespace Surexs.DanceOff.Core
 {
     public sealed class MainMenuSceneBootstrap : MonoBehaviour
     {
+        [Header("Typography")]
+        [SerializeField] private Font titleFont;
+        [SerializeField] private Font bodyFont;
+
         private void Awake()
         {
+            SurexsVisualTheme.ConfigureFonts(titleFont,bodyFont);
             CreateEventSystem();
             var canvas=CreateCanvas();
             Image("Background",canvas,Vector2.zero,new Vector2(1920,1080),SurexsVisualTheme.Background);
             Image("Top Glow",canvas,new Vector2(0,465),new Vector2(1920,150),SurexsVisualTheme.BackgroundGlow);
             Image("Accent Bar",canvas,new Vector2(0,437),new Vector2(520,7),SurexsVisualTheme.Accent);
             var title=Text("Title",canvas,new Vector2(0,365),new Vector2(1200,150),"SUREXS\nDANCE OFF",68);
+            title.font=SurexsVisualTheme.TitleFont;
             title.color=SurexsVisualTheme.TextPrimary;
             var subtitle=Text("Subtitle",canvas,new Vector2(0,265),new Vector2(900,45),"RHYTHM • POSES • OFFICE CHAOS",20);
             subtitle.color=SurexsVisualTheme.TextSecondary;
@@ -24,11 +30,13 @@ namespace Surexs.DanceOff.Core
             var play=Button("Play",main.transform,new Vector2(0,80),"JUGAR");
             var opts=Button("Options",main.transform,new Vector2(0,-20),"OPCIONES");
             var quit=Button("Quit",main.transform,new Vector2(0,-120),"SALIR");
-            Text("Mode Title",modes.transform,new Vector2(0,170),new Vector2(900,80),"SELECCIONA MODO",42);
+            var modeTitle=Text("Mode Title",modes.transform,new Vector2(0,170),new Vector2(900,80),"SELECCIONA MODO",42);
+            modeTitle.font=SurexsVisualTheme.TitleFont;
             var solo=Button("Solo",modes.transform,new Vector2(0,60),"SOLO",SurexsVisualTheme.Primary,new Vector2(500,86));
             var versus=Button("Versus",modes.transform,new Vector2(0,-45),"1 VS 1",SurexsVisualTheme.Secondary,new Vector2(500,86));
             var modeBack=Button("Back",modes.transform,new Vector2(0,-155),"VOLVER",SurexsVisualTheme.SurfaceRaised,new Vector2(300,62));
-            Text("Options Title",options.transform,new Vector2(0,120),new Vector2(900,80),"OPCIONES",42);
+            var optionsTitle=Text("Options Title",options.transform,new Vector2(0,120),new Vector2(900,80),"OPCIONES",42);
+            optionsTitle.font=SurexsVisualTheme.TitleFont;
             Text("Options Placeholder",options.transform,new Vector2(0,20),new Vector2(900,60),"PRÓXIMAMENTE",28);
             var optionsBack=Button("Options Back",options.transform,new Vector2(0,-110),"VOLVER");
             controller.Configure(main,modes,options,play,solo,optionsBack);
@@ -56,6 +64,6 @@ namespace Surexs.DanceOff.Core
         private static Image Image(string name,Transform parent,Vector2 pos,Vector2 size,Color color)
         { var go=new GameObject(name,typeof(RectTransform),typeof(Image)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var i=go.GetComponent<Image>(); i.color=color; return i; }
         private static Text Text(string name,Transform parent,Vector2 pos,Vector2 size,string value,int fontSize)
-        { var go=new GameObject(name,typeof(RectTransform),typeof(Text)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var t=go.GetComponent<Text>(); t.font=SurexsVisualTheme.Font; t.text=value; t.fontSize=fontSize; t.fontStyle=FontStyle.Bold; t.alignment=TextAnchor.MiddleCenter; t.color=SurexsVisualTheme.TextPrimary; return t; }
+        { var go=new GameObject(name,typeof(RectTransform),typeof(Text)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var t=go.GetComponent<Text>(); t.font=SurexsVisualTheme.BodyFont; t.text=value; t.fontSize=fontSize; t.fontStyle=FontStyle.Bold; t.alignment=TextAnchor.MiddleCenter; t.color=SurexsVisualTheme.TextPrimary; return t; }
     }
 }

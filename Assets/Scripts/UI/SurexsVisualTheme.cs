@@ -18,8 +18,21 @@ namespace Surexs.DanceOff.UI
         public static Color TextSecondary => new Color(0.60f, 0.72f, 0.88f, 1f);
 
         private static Sprite roundedSprite;
+        private static Font titleFont;
+        private static Font bodyFont;
+        private static Font legacyFont;
 
-        public static Font Font => Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        public static Font Font => legacyFont != null
+            ? legacyFont
+            : legacyFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        public static Font TitleFont => titleFont != null ? titleFont : Font;
+        public static Font BodyFont => bodyFont != null ? bodyFont : Font;
+
+        public static void ConfigureFonts(Font titles, Font body)
+        {
+            titleFont = titles;
+            bodyFont = body;
+        }
 
         public static void ApplyRounded(Image image)
         {
