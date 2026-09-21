@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Surexs.DanceOff.Core::Surexs.DanceOff.Core.PhaseOneSceneBootstrap
   song: {fileID: 8300000, guid: d023565cf9276714aa18308dfe18fa28, type: 3}
-  chart: {fileID: 4900000, guid: 0ce35ef589b08234186e9d67a82288f1, type: 3}
+  chart: {fileID: 4900000, guid: c2a41d8e7f5b4c6390ad1e6f28b75394, type: 3}
   gameplayConfig:
     perfectWindow: 0.05
     greatWindow: 0.1
@@ -191,12 +191,14 @@ MonoBehaviour:
       message: SUREXS LEGEND!
   titleFont: {fileID: 12800000, guid: 860a44a1de8e7e04e96de74d5e4f06ca, type: 3}
   bodyFont: {fileID: 12800000, guid: aa60251632860fe42b7a984028553af8, type: 3}
-  player1InputSource: 0
-  player2InputSource: 0
+  player1InputSource: 1
+  player2InputSource: 1
   player1GamepadIndex: 0
   player2GamepadIndex: 1
   player1GamepadAxisThreshold: 0.5
   player2GamepadAxisThreshold: 0.5
+  player1GamepadDevice: XInputControllerWindows
+  player2GamepadDevice: XInputControllerWindows1
   player1Joystick:
     joystickIndex: 0
     deviceProduct: 

@@ -22,12 +22,14 @@ namespace Surexs.DanceOff.Core
         [SerializeField] private Font titleFont;
         [SerializeField] private Font bodyFont;
         [Header("Input Sources")]
-        [SerializeField] private RhythmInputSourceType player1InputSource = RhythmInputSourceType.Keyboard;
-        [SerializeField] private RhythmInputSourceType player2InputSource = RhythmInputSourceType.Keyboard;
+        [SerializeField] private RhythmInputSourceType player1InputSource = RhythmInputSourceType.Gamepad;
+        [SerializeField] private RhythmInputSourceType player2InputSource = RhythmInputSourceType.Gamepad;
         [SerializeField, Min(0)] private int player1GamepadIndex;
         [SerializeField, Min(0)] private int player2GamepadIndex = 1;
         [SerializeField, Range(0.1f, 0.95f)] private float player1GamepadAxisThreshold = 0.5f;
         [SerializeField, Range(0.1f, 0.95f)] private float player2GamepadAxisThreshold = 0.5f;
+        [SerializeField] private string player1GamepadDevice = "XInputControllerWindows";
+        [SerializeField] private string player2GamepadDevice = "XInputControllerWindows1";
         [SerializeField] private JoystickInputConfig player1Joystick = new JoystickInputConfig();
         [SerializeField] private JoystickInputConfig player2Joystick = new JoystickInputConfig { joystickIndex = 1 };
         [Header("Solo Gameplay Graphics")]
@@ -84,8 +86,8 @@ namespace Surexs.DanceOff.Core
             {
                 var p1TileRoot=MaskedTileRoot("Player 1 Runtime Tiles",canvas,new Vector2(-550f,-155f),new Vector2(630f,520f));
                 var p2TileRoot=MaskedTileRoot("Player 2 Runtime Tiles",canvas,new Vector2(550f,-155f),new Vector2(630f,520f));
-                var p1 = Player(shared, p1TileRoot, canvas, "PLAYER 1", -550, new[] {-760f,-550f,-340f}, Key.A, Key.W, Key.S, Key.D, new Color(.22f,.67f,.92f),player1InputSource,player1GamepadIndex,player1GamepadAxisThreshold,player1Joystick,PlayerVisualLayout.VersusLeft);
-                var p2 = Player(shared, p2TileRoot, canvas, "PLAYER 2",  550, new[] { 340f, 550f, 760f}, Key.LeftArrow, Key.UpArrow, Key.DownArrow, Key.RightArrow, new Color(.95f,.45f,.55f),player2InputSource,player2GamepadIndex,player2GamepadAxisThreshold,player2Joystick,PlayerVisualLayout.VersusRight);
+                var p1 = Player(shared, p1TileRoot, canvas, "PLAYER 1", -550, new[] {-760f,-550f,-340f}, Key.A, Key.W, Key.S, Key.D, new Color(.22f,.67f,.92f),player1InputSource,player1GamepadIndex,player1GamepadAxisThreshold,player1GamepadDevice,player1Joystick,PlayerVisualLayout.VersusLeft);
+                var p2 = Player(shared, p2TileRoot, canvas, "PLAYER 2",  550, new[] { 340f, 550f, 760f}, Key.LeftArrow, Key.UpArrow, Key.DownArrow, Key.RightArrow, new Color(.95f,.45f,.55f),player2InputSource,player2GamepadIndex,player2GamepadAxisThreshold,player2GamepadDevice,player2Joystick,PlayerVisualLayout.VersusRight);
                 shared.Controller.Configure(shared.Audio, shared.Chart, new[] {p1.Tiles,p2.Tiles}, new[] {p1.Judge,p2.Judge}, gameplayConfig);
                 shared.Root.AddComponent<LocalVersusMatchState>().Configure(p1.Score, p2.Score);
                 sessions = new[] { p1.Session, p2.Session };
@@ -93,7 +95,7 @@ namespace Surexs.DanceOff.Core
             else
             {
                 var tileRoot=MaskedTileRoot("Runtime Tiles",canvas,new Vector2(-380f,0f),new Vector2(900f,720f));
-                var p1 = Player(shared, tileRoot, canvas, "PLAYER 1", 520, new[] {-670f,-380f,-90f}, Key.A, Key.W, Key.S, Key.D, new Color(.22f,.67f,.92f),player1InputSource,player1GamepadIndex,player1GamepadAxisThreshold,player1Joystick,PlayerVisualLayout.Solo);
+                var p1 = Player(shared, tileRoot, canvas, "PLAYER 1", 520, new[] {-670f,-380f,-90f}, Key.A, Key.W, Key.S, Key.D, new Color(.22f,.67f,.92f),player1InputSource,player1GamepadIndex,player1GamepadAxisThreshold,player1GamepadDevice,player1Joystick,PlayerVisualLayout.Solo);
                 shared.Controller.Configure(shared.Audio, shared.Chart, p1.Tiles, p1.Judge, gameplayConfig);
                 sessions = new[] { p1.Session };
             }
@@ -215,7 +217,7 @@ namespace Surexs.DanceOff.Core
         private PlayerSet Player(SharedSet shared, RectTransform tileRoot, Transform canvas, string name, float x,
             float[] lanes, Key left, Key centerPrimary, Key centerSecondary, Key right, Color accent,
             RhythmInputSourceType inputSourceType, int gamepadIndex, float gamepadAxisThreshold,
-            JoystickInputConfig joystickConfig, PlayerVisualLayout layout)
+            string gamepadDevice, JoystickInputConfig joystickConfig, PlayerVisualLayout layout)
         {
             var soloRedesign=layout==PlayerVisualLayout.Solo;
             var playerTwo=layout==PlayerVisualLayout.VersusRight;
@@ -285,7 +287,7 @@ namespace Surexs.DanceOff.Core
                 points=Text(name+" Judgment Points",canvas,new Vector2(x,-5),new Vector2(220,42),"",24);
             }
             var go=new GameObject(name+" Systems");
-            var input=CreateInputSource(go,inputSourceType,gamepadIndex,gamepadAxisThreshold,joystickConfig,left,centerPrimary,centerSecondary,right);
+            var input=CreateInputSource(go,inputSourceType,gamepadIndex,gamepadAxisThreshold,gamepadDevice,joystickConfig,left,centerPrimary,centerSecondary,right);
             go.AddComponent<ControlInputFeedbackView>().Configure(input,hitZones[0],hitZones[1],hitZones[2]);
             var judge=go.AddComponent<RhythmJudge>(); judge.Configure(shared.Audio,input,gameplayConfig);
             var combo=go.AddComponent<ComboManager>(); combo.Configure(gameplayConfig);
@@ -326,13 +328,13 @@ namespace Surexs.DanceOff.Core
         }
 
         private static IRhythmInputSource CreateInputSource(GameObject owner, RhythmInputSourceType sourceType,
-            int gamepadIndex, float gamepadAxisThreshold, JoystickInputConfig joystickConfig,
+            int gamepadIndex, float gamepadAxisThreshold, string gamepadDevice, JoystickInputConfig joystickConfig,
             Key left, Key centerPrimary, Key centerSecondary, Key right)
         {
             if (sourceType == RhythmInputSourceType.Gamepad)
             {
                 var gamepad=owner.AddComponent<GamepadInputReader>();
-                gamepad.Configure(gamepadIndex,gamepadAxisThreshold);
+                gamepad.Configure(gamepadIndex,gamepadAxisThreshold,gamepadDevice);
                 return gamepad;
             }
 

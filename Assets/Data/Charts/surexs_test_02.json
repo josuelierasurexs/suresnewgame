@@ -1,0 +1,33 @@
+{
+  "song": "surexs_test_02",
+  "visualSpeed": 1.0,
+  "tiles": [
+    { "time": 1.00, "direction": "right",  "pose": "tablet" },
+    { "time": 2.00, "direction": "center", "pose": "phone" },
+    { "time": 3.25, "direction": "left",   "pose": "laptop" },
+    { "time": 3.61, "direction": "left",   "pose": "tablet" },
+    { "time": 3.99, "direction": "center", "pose": "laptop" },
+    { "time": 5.00, "direction": "right",  "pose": "phone" },
+    { "time": 5.99, "direction": "center", "pose": "tablet" },
+    { "time": 7.24, "direction": "left",   "pose": "phone" },
+    { "time": 7.63, "direction": "left",   "pose": "laptop" },
+    { "time": 8.02, "direction": "center", "pose": "tablet" },
+    { "time": 8.99, "direction": "right",  "pose": "laptop" },
+    { "time": 9.49, "direction": "right",  "pose": "phone" },
+    { "time": 9.99, "direction": "center", "pose": "laptop" },
+    { "time": 10.49, "direction": "center", "pose": "tablet" },
+    { "time": 10.75, "direction": "center", "pose": "phone" },
+    { "time": 11.24, "direction": "left",   "pose": "tablet" },
+    { "time": 11.98, "direction": "left",   "pose": "phone" },
+    { "time": 13.00, "direction": "right",  "pose": "laptop" },
+    { "time": 14.02, "direction": "center", "pose": "phone" },
+    { "time": 15.25, "direction": "left",   "pose": "laptop" },
+    { "time": 16.00, "direction": "right",  "pose": "tablet" },
+    { "time": 17.00, "direction": "left",   "pose": "phone" },
+    { "time": 18.00, "direction": "left",   "pose": "tablet" },
+    { "time": 19.00, "direction": "center", "pose": "laptop" },
+    { "time": 19.25, "direction": "right",  "pose": "phone" },
+    { "time": 19.53, "direction": "left",   "pose": "laptop" },
+    { "time": 20.00, "direction": "center", "pose": "tablet" }
+  ]
+}

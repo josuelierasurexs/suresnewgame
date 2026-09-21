@@ -1,0 +1,366 @@
+{
+  "song": "surexs_demo",
+  "visualSpeed": 1.0,
+  "tiles": [
+    {
+      "time": 1.085,
+      "direction": "right",
+      "pose": "phone"
+    },
+    {
+      "time": 1.96,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 3.273,
+      "direction": "left",
+      "pose": "phone"
+    },
+    {
+      "time": 3.96,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 5.023,
+      "direction": "right",
+      "pose": "phone"
+    },
+    {
+      "time": 6.023,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 7.273,
+      "direction": "left",
+      "pose": "phone"
+    },
+    {
+      "time": 7.96,
+      "direction": "center",
+      "pose": "laptop"
+    },
+    {
+      "time": 9.023,
+      "direction": "right",
+      "pose": "laptop"
+    },
+    {
+      "time": 10.023,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 11.273,
+      "direction": "left",
+      "pose": "tablet"
+    },
+    {
+      "time": 11.898,
+      "direction": "center",
+      "pose": "laptop"
+    },
+    {
+      "time": 12.96,
+      "direction": "right",
+      "pose": "laptop"
+    },
+    {
+      "time": 13.96,
+      "direction": "left",
+      "pose": "phone"
+    },
+    {
+      "time": 14.96,
+      "direction": "right",
+      "pose": "laptop"
+    },
+    {
+      "time": 15.96,
+      "direction": "center",
+      "pose": "laptop"
+    },
+    {
+      "time": 16.96,
+      "direction": "right",
+      "pose": "tablet"
+    },
+    {
+      "time": 17.96,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 18.96,
+      "direction": "right",
+      "pose": "laptop"
+    },
+    {
+      "time": 19.96,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 20.96,
+      "direction": "left",
+      "pose": "phone"
+    },
+    {
+      "time": 21.96,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 22.96,
+      "direction": "right",
+      "pose": "tablet"
+    },
+    {
+      "time": 23.46,
+      "direction": "right",
+      "pose": "tablet"
+    },
+    {
+      "time": 23.96,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 24.96,
+      "direction": "right",
+      "pose": "phone"
+    },
+    {
+      "time": 26.023,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 27.023,
+      "direction": "left",
+      "pose": "laptop"
+    },
+    {
+      "time": 27.46,
+      "direction": "left",
+      "pose": "laptop"
+    },
+    {
+      "time": 27.96,
+      "direction": "center",
+      "pose": "laptop"
+    },
+    {
+      "time": 29.023,
+      "direction": "left",
+      "pose": "tablet"
+    },
+    {
+      "time": 29.96,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 30.96,
+      "direction": "right",
+      "pose": "tablet"
+    },
+    {
+      "time": 31.398,
+      "direction": "right",
+      "pose": "tablet"
+    },
+    {
+      "time": 31.96,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 32.398,
+      "direction": "right",
+      "pose": "phone"
+    },
+    {
+      "time": 32.96,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 33.96,
+      "direction": "right",
+      "pose": "tablet"
+    },
+    {
+      "time": 34.96,
+      "direction": "center",
+      "pose": "laptop"
+    },
+    {
+      "time": 35.46,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 35.96,
+      "direction": "right",
+      "pose": "laptop"
+    },
+    {
+      "time": 36.96,
+      "direction": "left",
+      "pose": "phone"
+    },
+    {
+      "time": 37.96,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 38.96,
+      "direction": "right",
+      "pose": "laptop"
+    },
+    {
+      "time": 39.46,
+      "direction": "right",
+      "pose": "tablet"
+    },
+    {
+      "time": 39.96,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 40.398,
+      "direction": "right",
+      "pose": "tablet"
+    },
+    {
+      "time": 40.96,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 41.96,
+      "direction": "right",
+      "pose": "laptop"
+    },
+    {
+      "time": 42.96,
+      "direction": "right",
+      "pose": "phone"
+    },
+    {
+      "time": 43.46,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 43.96,
+      "direction": "left",
+      "pose": "tablet"
+    },
+    {
+      "time": 44.46,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 44.96,
+      "direction": "right",
+      "pose": "phone"
+    },
+    {
+      "time": 45.96,
+      "direction": "right",
+      "pose": "tablet"
+    },
+    {
+      "time": 46.96,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 47.398,
+      "direction": "left",
+      "pose": "tablet"
+    },
+    {
+      "time": 47.898,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 48.46,
+      "direction": "right",
+      "pose": "tablet"
+    },
+    {
+      "time": 48.96,
+      "direction": "right",
+      "pose": "laptop"
+    },
+    {
+      "time": 49.96,
+      "direction": "center",
+      "pose": "laptop"
+    },
+    {
+      "time": 50.96,
+      "direction": "left",
+      "pose": "tablet"
+    },
+    {
+      "time": 51.398,
+      "direction": "left",
+      "pose": "laptop"
+    },
+    {
+      "time": 51.96,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 52.398,
+      "direction": "left",
+      "pose": "phone"
+    },
+    {
+      "time": 52.96,
+      "direction": "right",
+      "pose": "phone"
+    },
+    {
+      "time": 54.023,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 55.023,
+      "direction": "left",
+      "pose": "phone"
+    },
+    {
+      "time": 55.46,
+      "direction": "left",
+      "pose": "laptop"
+    },
+    {
+      "time": 55.898,
+      "direction": "center",
+      "pose": "tablet"
+    },
+    {
+      "time": 56.398,
+      "direction": "center",
+      "pose": "phone"
+    },
+    {
+      "time": 56.898,
+      "direction": "right",
+      "pose": "laptop"
+    }
+  ]
+}
