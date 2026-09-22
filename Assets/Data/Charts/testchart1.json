@@ -1,0 +1,371 @@
+{
+    "song": "song",
+    "visualSpeed": 1.0,
+    "tiles": [
+        {
+            "time": 1.5146485567092896,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 2.069319725036621,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 3.4133107662200928,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 3.7973241806030273,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 4.138662338256836,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 5.1199774742126465,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 6.1653289794921875,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 7.423990726470947,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 8.127982139587402,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 9.151995658874512,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 10.133310317993164,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 11.413311004638672,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 12.159976959228516,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 13.183990478515625,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 14.186643600463867,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 15.466644287109375,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 16.149320602416992,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 17.19464874267578,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 17.70664405822754,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 18.175987243652344,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 19.221315383911133,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 19.66931915283203,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 20.18131446838379,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 21.2053279876709,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 21.653310775756836,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 22.186643600463867,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 23.189319610595703,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 23.679977416992188,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 24.19199562072754,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 25.19464874267578,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 25.68532943725586,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 26.175987243652344,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 27.19997787475586,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 27.66931915283203,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 28.159976959228516,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 29.183990478515625,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 29.653310775756836,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 30.165328979492188,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 31.189319610595703,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 31.679977416992188,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 32.191993713378906,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 32.639976501464844,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 33.15199661254883,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 34.197322845458984,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 35.41331100463867,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 35.818660736083984,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 36.159976959228516,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 37.20532989501953,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 38.1866455078125,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 39.466644287109375,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 39.82931900024414,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 40.14931869506836,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 41.21598815917969,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 42.197322845458984,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 43.43465042114258,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 43.818660736083984,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 44.159976959228516,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 45.183990478515625,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 46.16532897949219,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 47.466644287109375,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 47.82931900024414,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 48.170658111572266,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 49.19464874267578,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 50.15464782714844,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 51.43465042114258,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 51.797325134277344,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 52.159976959228516,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 53.183990478515625,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 53.67464828491211,
+            "direction": "center",
+            "pose": "phone"
+        },
+        {
+            "time": 54.16532897949219,
+            "direction": "left",
+            "pose": "phone"
+        },
+        {
+            "time": 55.402652740478516,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 55.786643981933594,
+            "direction": "right",
+            "pose": "phone"
+        },
+        {
+            "time": 56.14931869506836,
+            "direction": "center",
+            "pose": "phone"
+        }
+    ]
+}

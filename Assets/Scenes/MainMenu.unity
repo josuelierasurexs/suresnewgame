@@ -46,3 +46,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Surexs.DanceOff.Core::Surexs.DanceOff.Core.MainMenuSceneBootstrap
   titleFont: {fileID: 12800000, guid: 860a44a1de8e7e04e96de74d5e4f06ca, type: 3}
   bodyFont: {fileID: 12800000, guid: aa60251632860fe42b7a984028553af8, type: 3}
+  brokerHeroLogoTexture: {fileID: 2800000, guid: 94a544d3b97ae3c46a04f696291cfe6b, type: 3}
+  surexsLogoTexture: {fileID: 2800000, guid: b75986ddd65c4bf984cb9046f3a6964a, type: 3}
+  blueButtonTexture: {fileID: 2800000, guid: 41be67b653704ccc86274f79ee8f39bb, type: 3}
+  greenButtonTexture: {fileID: 2800000, guid: a43f3ef507634da9b47c1c8e3ad773ee, type: 3}
+  gameplayDemoClip: {fileID: 32900000, guid: 66ed80c31cad4596a62002f19391da4e, type: 3}
+  instructionsTexture: {fileID: 2800000, guid: 17efc59dd5b2492c9acb640f931716f9, type: 3}

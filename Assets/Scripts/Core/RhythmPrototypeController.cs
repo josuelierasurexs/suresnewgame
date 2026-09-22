@@ -12,8 +12,7 @@ namespace Surexs.DanceOff.Core
         [SerializeField] private TileSpawner[] tileSpawners;
         [SerializeField] private RhythmJudge[] rhythmJudges;
 
-        private double chartEndTime;
-        private double completionGrace;
+        private bool sessionRunning;
         private bool completed;
 
         public event Action ChartCompleted;
@@ -32,12 +31,12 @@ namespace Surexs.DanceOff.Core
             chartManager = chart;
             tileSpawners = spawners;
             rhythmJudges = judges;
-            completionGrace = gameplayConfig.goodWindow;
         }
 
         public bool StartSession()
         {
             audioManager.StopMusic();
+            sessionRunning = false;
             if (!chartManager.LoadChart())
             {
                 Debug.LogError("[RhythmPrototype] No se inició el prototipo porque el chart no es válido.", this);
@@ -60,9 +59,9 @@ namespace Surexs.DanceOff.Core
                 return false;
             }
 
+            sessionRunning = true;
             var events = chartManager.Events;
             var lastEventTime = events[events.Count - 1].Time;
-            chartEndTime = lastEventTime + completionGrace;
             if (lastEventTime > audioManager.DurationSeconds)
             {
                 Debug.LogWarning($"[RhythmPrototype] El último evento ({lastEventTime:F2} s) está fuera del clip ({audioManager.DurationSeconds:F2} s).", this);
@@ -72,6 +71,7 @@ namespace Surexs.DanceOff.Core
 
         public void StopSession()
         {
+            sessionRunning = false;
             audioManager.StopMusic();
             for (var index=0; index<rhythmJudges.Length; index++) rhythmJudges[index].StopJudging();
             for (var index=0; index<tileSpawners.Length; index++) tileSpawners[index].StopSpawning();
@@ -79,15 +79,15 @@ namespace Surexs.DanceOff.Core
 
         private void Update()
         {
-            if (completed || !audioManager.IsPlaying || audioManager.SongTimeSeconds <= chartEndTime)
+            if (completed || !sessionRunning || audioManager.IsPlaying)
             {
                 return;
             }
 
+            sessionRunning = false;
             completed = true;
-            audioManager.StopMusic();
             ChartCompleted?.Invoke();
-            Debug.Log($"[RhythmPrototype] Chart terminado en {chartEndTime:F3} s. Gameplay en espera.", this);
+            Debug.Log($"[RhythmPrototype] Canción terminada en {audioManager.DurationSeconds:F3} s. Gameplay en espera.", this);
         }
     }
 }

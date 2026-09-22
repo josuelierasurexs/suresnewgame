@@ -3,16 +3,16 @@ guid: 860a44a1de8e7e04e96de74d5e4f06ca
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
-  fontSize: 16
+  fontSize: 64
   forceTextureCase: -2
   characterSpacing: 0
-  characterPadding: 1
+  characterPadding: 4
   includeFontData: 1
   fontNames:
   - CocogooseProTrial
   fallbackFontReferences: []
   customCharacters: 
-  fontRenderingMode: 0
+  fontRenderingMode: 2
   ascentCalculationMode: 1
   useLegacyBoundsCalculation: 0
   shouldRoundAdvanceValue: 1

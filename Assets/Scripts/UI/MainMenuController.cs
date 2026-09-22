@@ -3,6 +3,7 @@ using Surexs.DanceOff.Gameplay;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -11,52 +12,80 @@ namespace Surexs.DanceOff.UI
     public sealed class MainMenuController : MonoBehaviour
     {
         private GameObject mainPanel;
-        private GameObject modePanel;
-        private GameObject optionsPanel;
+        private GameObject instructionsPanel;
         private Button playButton;
         private Button soloButton;
-        private Button optionsBackButton;
-        private bool initialized;
+        private Button versusButton;
+        private int instructionsShownFrame = -1;
 
-        public void Configure(GameObject main, GameObject modes, GameObject options, Button play,
-            Button solo, Button optionsBack)
-        { mainPanel=main; modePanel=modes; optionsPanel=options; playButton=play; soloButton=solo; optionsBackButton=optionsBack; ShowMain(); }
+        public void Configure(GameObject main, GameObject instructions, Button play, Button solo, Button versus)
+        {
+            mainPanel=main;
+            instructionsPanel=instructions;
+            playButton=play;
+            soloButton=solo;
+            versusButton=versus;
+            ShowMain();
+        }
 
         private void Update()
         {
-            var keyboard=Keyboard.current;
-            if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame) return;
-            if (modePanel.activeSelf || optionsPanel.activeSelf) ShowMain();
+            if (instructionsPanel != null && instructionsPanel.activeSelf)
+            {
+                if (Time.frameCount > instructionsShownFrame + 1 && AnyButtonPressedThisFrame())
+                    BeginSelectedGame();
+                return;
+            }
+
+            if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == null)
+                Select(soloButton != null && soloButton.gameObject.activeInHierarchy ? soloButton : playButton);
         }
 
-        public void ShowMain() { ShowOnly(mainPanel); Select(playButton); }
-        public void ShowModes() { ShowOnly(modePanel); Select(soloButton); }
-        public void ShowOptions() { ShowOnly(optionsPanel); Select(optionsBackButton); }
+        public void ShowMain()
+        {
+            mainPanel.SetActive(true);
+            instructionsPanel.SetActive(false);
+            playButton.gameObject.SetActive(true);
+            soloButton.gameObject.SetActive(false);
+            versusButton.gameObject.SetActive(false);
+            Select(playButton);
+        }
+        public void FocusModeSelection()
+        {
+            playButton.gameObject.SetActive(false);
+            soloButton.gameObject.SetActive(true);
+            versusButton.gameObject.SetActive(true);
+            Select(soloButton);
+        }
         public void StartSolo() { StartGame(GameMode.Solo); }
         public void StartVersus() { StartGame(GameMode.LocalVersus); }
-        public void Quit()
+        public void BeginSelectedGame()
         {
-#if UNITY_EDITOR
-            Debug.Log("[MainMenu] SALIR ejecutará Application.Quit en un build.", this);
-#else
-            Application.Quit();
-#endif
+            if (instructionsPanel == null || !instructionsPanel.activeSelf ||
+                Time.frameCount <= instructionsShownFrame + 1) return;
+            SceneManager.LoadScene("Game");
         }
-
-        private void StartGame(GameMode mode) { GameSession.SelectMode(mode); SceneManager.LoadScene("Game"); }
-        private void ShowOnly(GameObject selected)
+        private void StartGame(GameMode mode)
         {
-            SetVisible(mainPanel,selected==mainPanel);
-            SetVisible(modePanel,selected==modePanel);
-            SetVisible(optionsPanel,selected==optionsPanel);
-            initialized=true;
-        }
-        private void SetVisible(GameObject panel,bool visible)
-        {
-            var transition=panel.GetComponent<UiPanelTransition>();
-            if (transition != null) transition.SetVisible(visible,!initialized);
-            else panel.SetActive(visible);
+            GameSession.SelectMode(mode);
+            instructionsShownFrame=Time.frameCount;
+            mainPanel.SetActive(false);
+            instructionsPanel.SetActive(true);
+            EventSystem.current.SetSelectedGameObject(null);
         }
         private static void Select(Button button) { EventSystem.current.SetSelectedGameObject(button.gameObject); }
+
+        private static bool AnyButtonPressedThisFrame()
+        {
+            foreach (var device in InputSystem.devices)
+            {
+                foreach (var control in device.allControls)
+                {
+                    if (control is ButtonControl button && button.wasPressedThisFrame) return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

@@ -77,6 +77,14 @@ namespace Surexs.DanceOff.Core
             CreateCamera();
             CreateEventSystem();
             var canvas = CreateCanvas();
+#if UNITY_EDITOR
+            if (ChartRecorderAccess.ConsumeLaunchRequest())
+            {
+                CreateSoloBackdrop(canvas);
+                CreateChartRecorder(canvas);
+                return;
+            }
+#endif
             if (gameMode == GameMode.Solo) CreateSoloBackdrop(canvas);
             else CreateVersusBackdrop(canvas);
             var shared = Shared();
@@ -204,6 +212,140 @@ namespace Surexs.DanceOff.Core
         {
             if (asset == null) Debug.LogWarning($"[Bootstrap] Falta el asset visual Solo '{field}'.",this);
         }
+
+#if UNITY_EDITOR
+        private void CreateChartRecorder(Transform canvas)
+        {
+            const float tileRootX = -380f;
+            const float hitZoneY = -285f;
+            var lanes = new[] {-670f, -380f, -90f};
+            var localLanes = new[] {lanes[0] - tileRootX, lanes[1] - tileRootX, lanes[2] - tileRootX};
+            var labels = new[] {"LEFT ←", "CENTER ●", "RIGHT →"};
+            var keys = new[] {"A", "W / S", "D"};
+            var hitZones = new Image[3];
+            var tileRoot = MaskedTileRoot("Chart Recorder Note Preview", canvas,
+                new Vector2(tileRootX, 0f), new Vector2(900f, 720f));
+
+            for (var index = 0; index < lanes.Length; index++)
+            {
+                hitZones[index] = Image("Recorder Hit " + index, canvas,
+                    new Vector2(lanes[index], hitZoneY), new Vector2(230, 72),
+                    new Color(.12f, .86f, .48f, .72f));
+                SurexsVisualTheme.ApplyRounded(hitZones[index]);
+                var hitOutline = hitZones[index].gameObject.AddComponent<Outline>();
+                hitOutline.effectColor = new Color(.45f, 1f, .72f, .9f);
+                hitOutline.effectDistance = new Vector2(3f, -3f);
+
+                var laneLabel = Text("Recorder Lane Label " + index, canvas,
+                    new Vector2(lanes[index], 350f), new Vector2(210, 34), labels[index], 22);
+                laneLabel.font = SurexsVisualTheme.TitleFont;
+
+                var keyPanel = Image("Recorder Key " + index, canvas,
+                    new Vector2(lanes[index], -420f), new Vector2(112, 46),
+                    new Color(.02f, .18f, .34f, .94f));
+                SurexsVisualTheme.ApplyRounded(keyPanel);
+                var keyOutline = keyPanel.gameObject.AddComponent<Outline>();
+                keyOutline.effectColor = new Color(.22f, .67f, .92f, .95f);
+                keyOutline.effectDistance = new Vector2(2f, -2f);
+                var keyLabel = Text("Recorder Key Label " + index, keyPanel.transform,
+                    Vector2.zero, new Vector2(112, 46), keys[index], 20);
+                keyLabel.font = SurexsVisualTheme.BodyFont;
+            }
+
+            var panel = Image("Chart Recorder Panel", canvas, new Vector2(520, 0),
+                new Vector2(650, 890), new Color(.01f, .08f, .18f, .96f));
+            SurexsVisualTheme.ApplyRounded(panel);
+            var panelOutline = panel.gameObject.AddComponent<Outline>();
+            panelOutline.effectColor = new Color(.08f, .70f, 1f, .9f);
+            panelOutline.effectDistance = new Vector2(4f, -4f);
+
+            var title = Text("Recorder Title", panel.transform, new Vector2(0, 395),
+                new Vector2(570, 54), "EDITOR DE CHART", 34);
+            title.font = SurexsVisualTheme.TitleFont;
+            var recorderInputLabel = InputLabel("P1", player1InputSource, player1GamepadIndex, player1Joystick);
+            var instructions = Text("Recorder Instructions", panel.transform, new Vector2(0, 350),
+                new Vector2(570, 42), recorderInputLabel, 18);
+            instructions.font = SurexsVisualTheme.BodyFont;
+            instructions.color = new Color(.36f, .78f, 1f);
+
+            var time = Text("Recorder Time", panel.transform, new Vector2(0, 292),
+                new Vector2(570, 50), "SONG TIME  00:00.000", 29);
+            time.font = SurexsVisualTheme.BodyFont;
+            var count = Text("Recorder Count", panel.transform, new Vector2(0, 246),
+                new Vector2(570, 38), "NOTAS REGISTRADAS  0", 20);
+            count.font = SurexsVisualTheme.BodyFont;
+
+            var poseButton = Button("Recorder Pose", panel.transform, new Vector2(0, 188),
+                new Vector2(360, 48), "POSE: PHONE", new Color(.18f, .46f, .78f));
+            var poseText = poseButton.GetComponentInChildren<Text>();
+            poseText.font = SurexsVisualTheme.BodyFont;
+
+            var defaultChartName = song != null ? song.name + "_recorded" : "surexs_recorded_chart";
+            var fileName = Input("Recorder File Name", panel.transform, new Vector2(0, 126),
+                new Vector2(500, 48), defaultChartName, "Nombre del JSON");
+
+            var playPause = Button("Recorder Play Pause", panel.transform, new Vector2(-142, 58),
+                new Vector2(260, 50), "PAUSA", SurexsVisualTheme.Success);
+            var restart = Button("Recorder Restart", panel.transform, new Vector2(142, 58),
+                new Vector2(260, 50), "REINICIAR AUDIO", SurexsVisualTheme.Primary);
+            var undo = Button("Recorder Undo", panel.transform, new Vector2(-190, -8),
+                new Vector2(170, 48), "DESHACER", new Color(.22f, .32f, .50f));
+            var nudgeBack = Button("Recorder Nudge Back", panel.transform, new Vector2(0, -8),
+                new Vector2(170, 48), "ÚLTIMA -10ms", new Color(.22f, .32f, .50f));
+            var nudgeForward = Button("Recorder Nudge Forward", panel.transform, new Vector2(190, -8),
+                new Vector2(170, 48), "ÚLTIMA +10ms", new Color(.22f, .32f, .50f));
+
+            var offset = Text("Recorder Offset", panel.transform, new Vector2(0, -65),
+                new Vector2(320, 36), "OFFSET GLOBAL  0 ms", 18);
+            offset.font = SurexsVisualTheme.BodyFont;
+            var offsetBack = Button("Recorder Offset Back", panel.transform, new Vector2(-115, -112),
+                new Vector2(190, 44), "OFFSET -10ms", new Color(.18f, .36f, .58f));
+            var offsetForward = Button("Recorder Offset Forward", panel.transform, new Vector2(115, -112),
+                new Vector2(190, 44), "OFFSET +10ms", new Color(.18f, .36f, .58f));
+
+            var recent = Text("Recorder Recent Notes", panel.transform, new Vector2(0, -212),
+                new Vector2(560, 135), "AÚN NO HAY NOTAS", 17);
+            recent.font = SurexsVisualTheme.BodyFont;
+            recent.alignment = TextAnchor.UpperLeft;
+            recent.horizontalOverflow = HorizontalWrapMode.Overflow;
+
+            var save = Button("Recorder Save", panel.transform, new Vector2(0, -322),
+                new Vector2(430, 60), "GUARDAR JSON NUEVO", SurexsVisualTheme.Accent);
+            var status = Text("Recorder Status", panel.transform, new Vector2(0, -392),
+                new Vector2(570, 64), "Preparando grabación...", 16);
+            status.font = SurexsVisualTheme.BodyFont;
+
+            var recorderRoot = new GameObject("Chart Recorder Systems");
+            var source = recorderRoot.AddComponent<AudioSource>();
+            source.clip = song;
+            source.playOnAwake = false;
+            source.spatialBlend = 0f;
+            var audio = recorderRoot.AddComponent<AudioManager>();
+            audio.Configure(source);
+            var input = CreateInputSource(recorderRoot, player1InputSource, player1GamepadIndex,
+                player1GamepadAxisThreshold, player1GamepadDevice, player1Joystick,
+                Key.A, Key.W, Key.S, Key.D);
+            recorderRoot.AddComponent<ControlInputFeedbackView>()
+                .Configure(input, hitZones[0], hitZones[1], hitZones[2]);
+            var recorder = recorderRoot.AddComponent<ChartRecorderController>();
+            recorder.Configure(audio, source, input, tileRoot, localLanes, hitZoneY,
+                time, count, poseText, offset, recent, status, fileName,
+                playPause.GetComponentInChildren<Text>());
+
+            poseButton.onClick.AddListener(recorder.SelectNextPose);
+            playPause.onClick.AddListener(recorder.TogglePlayback);
+            restart.onClick.AddListener(recorder.RestartPlayback);
+            undo.onClick.AddListener(recorder.UndoLastNote);
+            nudgeBack.onClick.AddListener(() => recorder.NudgeLastNote(-10));
+            nudgeForward.onClick.AddListener(() => recorder.NudgeLastNote(10));
+            offsetBack.onClick.AddListener(() => recorder.AdjustGlobalOffset(-10));
+            offsetForward.onClick.AddListener(() => recorder.AdjustGlobalOffset(10));
+            save.onClick.AddListener(recorder.SaveChart);
+
+            if (song == null)
+                Debug.LogWarning("[ChartRecorder] No hay AudioClip asignado en Phase One Bootstrap.", this);
+        }
+#endif
 
         private SharedSet Shared()
         {
@@ -383,6 +525,22 @@ namespace Surexs.DanceOff.Core
             var p2Header=Text("P2 Results Header",p2Card.transform,new Vector2(0,255),new Vector2(470,42),"PLAYER 2",23);
             var retry=TextureButton("Rematch",panel.transform,new Vector2(-75,-435),new Vector2(390,120),"REVANCHA",resultsRetryButtonTexture);
             var menu=TextureButton("Menu",panel.transform,new Vector2(345,-435),new Vector2(390,120),"MENU",resultsMenuButtonTexture);
+            retry.navigation=new Navigation
+            {
+                mode=Navigation.Mode.Explicit,
+                selectOnLeft=menu,
+                selectOnRight=menu,
+                selectOnUp=menu,
+                selectOnDown=menu
+            };
+            menu.navigation=new Navigation
+            {
+                mode=Navigation.Mode.Explicit,
+                selectOnLeft=retry,
+                selectOnRight=retry,
+                selectOnUp=retry,
+                selectOnDown=retry
+            };
             title.font=SurexsVisualTheme.TitleFont;
             p1.font=SurexsVisualTheme.BodyFont;
             p2.font=SurexsVisualTheme.BodyFont;
@@ -465,7 +623,9 @@ namespace Surexs.DanceOff.Core
         private static Transform CreateCanvas()
         {
             var go=new GameObject("Prototype Canvas",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));
-            go.GetComponent<Canvas>().renderMode=RenderMode.ScreenSpaceOverlay;
+            var canvas=go.GetComponent<Canvas>();
+            canvas.renderMode=RenderMode.ScreenSpaceOverlay;
+            canvas.pixelPerfect=true;
             var scaler=go.GetComponent<CanvasScaler>(); scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution=new Vector2(1920,1080);
             scaler.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight; scaler.matchWidthOrHeight=.5f;
             return go.transform;
@@ -486,6 +646,33 @@ namespace Surexs.DanceOff.Core
         { var image=Image(name,parent,pos,size,color); image.raycastTarget=true; var outline=image.gameObject.AddComponent<Outline>(); outline.effectColor=new Color(1,1,1,.25f); outline.effectDistance=new Vector2(2,-2); var button=image.gameObject.AddComponent<Button>(); button.targetGraphic=image; button.transition=Selectable.Transition.ColorTint; SurexsVisualTheme.StyleButton(button,color); Text("Label",image.transform,Vector2.zero,size,label,20); return button; }
         private static Button TextureButton(string name,Transform parent,Vector2 pos,Vector2 size,string label,Texture texture)
         { var image=Raw(name,parent,pos,size,texture); image.raycastTarget=true; var button=image.gameObject.AddComponent<Button>(); button.targetGraphic=image; button.transition=Selectable.Transition.ColorTint; SurexsVisualTheme.StyleButton(button,Color.white); var text=Text("Label",image.transform,Vector2.zero,new Vector2(size.x*.76f,size.y*.6f),label,34); text.font=SurexsVisualTheme.BodyFont; return button; }
+
+#if UNITY_EDITOR
+        private static InputField Input(string name,Transform parent,Vector2 pos,Vector2 size,string value,string hint)
+        {
+            var background=Image(name,parent,pos,size,new Color(.025f,.12f,.24f,.98f));
+            background.raycastTarget=true;
+            SurexsVisualTheme.ApplyRounded(background);
+            var input=background.gameObject.AddComponent<InputField>();
+            input.targetGraphic=background;
+
+            var text=Text("Text",background.transform,Vector2.zero,new Vector2(size.x-34f,size.y-8f),value,18);
+            text.font=SurexsVisualTheme.BodyFont;
+            text.alignment=TextAnchor.MiddleLeft;
+            text.raycastTarget=true;
+            input.textComponent=text;
+
+            var placeholder=Text("Placeholder",background.transform,Vector2.zero,new Vector2(size.x-34f,size.y-8f),hint,18);
+            placeholder.font=SurexsVisualTheme.BodyFont;
+            placeholder.fontStyle=FontStyle.Italic;
+            placeholder.alignment=TextAnchor.MiddleLeft;
+            placeholder.color=new Color(1f,1f,1f,.42f);
+            input.placeholder=placeholder;
+            input.text=value;
+            input.characterLimit=80;
+            return input;
+        }
+#endif
 
         private static void NeonBackdrop(string name,Transform parent,Vector2 pos,Vector2 size,Color neon)
         {

@@ -46,12 +46,13 @@ namespace Surexs.DanceOff.UI
             if (image != null) ApplyRounded(image);
             var colors = ColorBlock.defaultColorBlock;
             colors.normalColor = normal;
-            colors.highlightedColor = Color.Lerp(normal, Color.white, 0.22f);
-            colors.selectedColor = Color.Lerp(normal, Accent, 0.28f);
-            colors.pressedColor = Color.Lerp(normal, Color.black, 0.28f);
+            colors.highlightedColor = normal;
+            colors.selectedColor = normal;
+            colors.pressedColor = normal;
             colors.disabledColor = new Color(0.16f, 0.18f, 0.24f, 0.65f);
             colors.fadeDuration = 0.08f;
             button.colors = colors;
+            button.transition = Selectable.Transition.None;
             if (button.GetComponent<ArcadeButtonMotion>() == null) button.gameObject.AddComponent<ArcadeButtonMotion>();
         }
 

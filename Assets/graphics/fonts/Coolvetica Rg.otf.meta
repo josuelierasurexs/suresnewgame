@@ -3,16 +3,16 @@ guid: aa60251632860fe42b7a984028553af8
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
-  fontSize: 16
+  fontSize: 64
   forceTextureCase: -2
   characterSpacing: 0
-  characterPadding: 1
+  characterPadding: 4
   includeFontData: 1
   fontNames:
   - Coolvetica
   fallbackFontReferences: []
   customCharacters: 
-  fontRenderingMode: 0
+  fontRenderingMode: 2
   ascentCalculationMode: 1
   useLegacyBoundsCalculation: 0
   shouldRoundAdvanceValue: 1

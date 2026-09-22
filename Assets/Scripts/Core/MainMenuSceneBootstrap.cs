@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace Surexs.DanceOff.Core
 {
@@ -11,38 +12,160 @@ namespace Surexs.DanceOff.Core
         [Header("Typography")]
         [SerializeField] private Font titleFont;
         [SerializeField] private Font bodyFont;
+        [Header("Main Menu Graphics")]
+        [SerializeField] private Texture brokerHeroLogoTexture;
+        [SerializeField] private Texture surexsLogoTexture;
+        [SerializeField] private Texture blueButtonTexture;
+        [SerializeField] private Texture greenButtonTexture;
+        [SerializeField] private VideoClip gameplayDemoClip;
+        [Header("Instructions")]
+        [SerializeField] private Texture instructionsTexture;
 
         private void Awake()
         {
             SurexsVisualTheme.ConfigureFonts(titleFont,bodyFont);
             CreateEventSystem();
             var canvas=CreateCanvas();
-            Image("Background",canvas,Vector2.zero,new Vector2(1920,1080),SurexsVisualTheme.Background);
-            Image("Top Glow",canvas,new Vector2(0,465),new Vector2(1920,150),SurexsVisualTheme.BackgroundGlow);
-            Image("Accent Bar",canvas,new Vector2(0,437),new Vector2(520,7),SurexsVisualTheme.Accent);
-            var title=Text("Title",canvas,new Vector2(0,365),new Vector2(1200,150),"SUREXS\nDANCE OFF",68);
-            title.font=SurexsVisualTheme.TitleFont;
-            title.color=SurexsVisualTheme.TextPrimary;
-            var subtitle=Text("Subtitle",canvas,new Vector2(0,265),new Vector2(900,45),"RHYTHM • POSES • OFFICE CHAOS",20);
-            subtitle.color=SurexsVisualTheme.TextSecondary;
+            var main=Rect("Main Menu",canvas,Vector2.zero,new Vector2(1920,1080));
+            Stretch(main);
+            CreateMainBackground(main);
+            CreateVideoPreview(main);
+            CreateHeader(main);
+
             var controller=gameObject.AddComponent<MainMenuController>();
-            var main=Panel("Main",canvas); var modes=Panel("Modes",canvas); var options=Panel("Options",canvas);
-            var play=Button("Play",main.transform,new Vector2(0,80),"JUGAR");
-            var opts=Button("Options",main.transform,new Vector2(0,-20),"OPCIONES");
-            var quit=Button("Quit",main.transform,new Vector2(0,-120),"SALIR");
-            var modeTitle=Text("Mode Title",modes.transform,new Vector2(0,170),new Vector2(900,80),"SELECCIONA MODO",42);
-            modeTitle.font=SurexsVisualTheme.TitleFont;
-            var solo=Button("Solo",modes.transform,new Vector2(0,60),"SOLO",SurexsVisualTheme.Primary,new Vector2(500,86));
-            var versus=Button("Versus",modes.transform,new Vector2(0,-45),"1 VS 1",SurexsVisualTheme.Secondary,new Vector2(500,86));
-            var modeBack=Button("Back",modes.transform,new Vector2(0,-155),"VOLVER",SurexsVisualTheme.SurfaceRaised,new Vector2(300,62));
-            var optionsTitle=Text("Options Title",options.transform,new Vector2(0,120),new Vector2(900,80),"OPCIONES",42);
-            optionsTitle.font=SurexsVisualTheme.TitleFont;
-            Text("Options Placeholder",options.transform,new Vector2(0,20),new Vector2(900,60),"PRÓXIMAMENTE",28);
-            var optionsBack=Button("Options Back",options.transform,new Vector2(0,-110),"VOLVER");
-            controller.Configure(main,modes,options,play,solo,optionsBack);
-            play.onClick.AddListener(controller.ShowModes); opts.onClick.AddListener(controller.ShowOptions); quit.onClick.AddListener(controller.Quit);
-            solo.onClick.AddListener(controller.StartSolo); versus.onClick.AddListener(controller.StartVersus);
-            modeBack.onClick.AddListener(controller.ShowMain); optionsBack.onClick.AddListener(controller.ShowMain);
+            var play=TextureButton("Play",main,new Vector2(0,-315),new Vector2(460,118),"JUGAR",greenButtonTexture,39);
+            var solo=TextureButton("Solo",main,new Vector2(-235,-445),new Vector2(420,94),"1 JUGADOR",blueButtonTexture,28);
+            var versus=TextureButton("Versus",main,new Vector2(235,-445),new Vector2(420,94),"1 VS 1",blueButtonTexture,28);
+            ConfigureMenuNavigation(play,solo,versus);
+
+            var instructions=CreateInstructions(canvas);
+            var instructionsButton=instructions.AddComponent<Button>();
+            instructionsButton.targetGraphic=instructions.GetComponent<Image>();
+            instructionsButton.transition=Selectable.Transition.None;
+
+            controller.Configure(main.gameObject,instructions,play,solo,versus);
+            play.onClick.AddListener(controller.FocusModeSelection);
+            solo.onClick.AddListener(controller.StartSolo);
+            versus.onClick.AddListener(controller.StartVersus);
+            instructionsButton.onClick.AddListener(controller.BeginSelectedGame);
+
+            WarnMissingAsset(brokerHeroLogoTexture,nameof(brokerHeroLogoTexture));
+            WarnMissingAsset(surexsLogoTexture,nameof(surexsLogoTexture));
+            WarnMissingAsset(blueButtonTexture,nameof(blueButtonTexture));
+            WarnMissingAsset(greenButtonTexture,nameof(greenButtonTexture));
+            WarnMissingAsset(gameplayDemoClip,nameof(gameplayDemoClip));
+            WarnMissingAsset(instructionsTexture,nameof(instructionsTexture));
+        }
+
+        private void CreateMainBackground(Transform parent)
+        {
+            var background=Image("Background",parent,Vector2.zero,new Vector2(1920,1080),new Color(.006f,.025f,.072f,1f));
+            Stretch(background.rectTransform);
+            background.raycastTarget=false;
+            for (var index=0;index<18;index++)
+            {
+                var normalized=index/17f;
+                var thickness=index%4==0 ? 3f : 1.5f;
+                var line=Image("Menu Blue Line "+index,parent,
+                    new Vector2(0,Mathf.Lerp(-520f,520f,normalized)),new Vector2(1920,thickness),
+                    new Color(.02f,.35f,.78f,index%4==0 ? .2f : .085f));
+                line.rectTransform.anchorMin=new Vector2(0f,.5f);
+                line.rectTransform.anchorMax=new Vector2(1f,.5f);
+                line.rectTransform.sizeDelta=new Vector2(0f,thickness);
+                line.raycastTarget=false;
+            }
+        }
+
+        private void CreateHeader(Transform parent)
+        {
+            var bar=Image("Header Bar",parent,Vector2.zero,new Vector2(1920,180),new Color(.015f,.13f,.28f,.98f));
+            bar.rectTransform.anchorMin=new Vector2(0f,1f);
+            bar.rectTransform.anchorMax=new Vector2(1f,1f);
+            bar.rectTransform.pivot=new Vector2(.5f,1f);
+            bar.rectTransform.anchoredPosition=Vector2.zero;
+            bar.rectTransform.sizeDelta=new Vector2(0f,180f);
+            bar.raycastTarget=false;
+            var accent=Image("Header Accent",bar.transform,new Vector2(0,-177),new Vector2(1920,3),new Color(.02f,.68f,1f,.9f));
+            accent.rectTransform.anchorMin=new Vector2(0f,1f);
+            accent.rectTransform.anchorMax=new Vector2(1f,1f);
+            accent.rectTransform.sizeDelta=new Vector2(0f,3f);
+            accent.raycastTarget=false;
+
+            var gameLogo=Raw("Broker Hero Logo",bar.transform,new Vector2(0,-105),new Vector2(500,250),brokerHeroLogoTexture);
+            gameLogo.raycastTarget=false;
+            gameLogo.gameObject.AddComponent<MenuLogoPulse>();
+            var companyLogo=Raw("Surexs Logo",bar.transform,new Vector2(835,-52),new Vector2(140,32),surexsLogoTexture);
+            companyLogo.raycastTarget=false;
+        }
+
+        private void CreateVideoPreview(Transform parent)
+        {
+            var frame=Image("Gameplay Demo Frame",parent,new Vector2(0,55),new Vector2(1090,610),new Color(.005f,.055f,.12f,.98f));
+            SurexsVisualTheme.ApplyRounded(frame);
+            frame.raycastTarget=false;
+            var outline=frame.gameObject.AddComponent<Outline>();
+            outline.effectColor=new Color(.05f,.72f,1f,.95f);
+            outline.effectDistance=new Vector2(5f,-5f);
+            var shadow=frame.gameObject.AddComponent<Shadow>();
+            shadow.effectColor=new Color(0,0,0,.72f);
+            shadow.effectDistance=new Vector2(0,-12f);
+
+            var viewport=Rect("Gameplay Demo Viewport",frame.transform,Vector2.zero,new Vector2(1050,570));
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var videoImage=Raw("Gameplay Demo",viewport,Vector2.zero,new Vector2(1050,570),null);
+            videoImage.raycastTarget=false;
+            var aspect=videoImage.gameObject.AddComponent<AspectRatioFitter>();
+            aspect.aspectMode=AspectRatioFitter.AspectMode.FitInParent;
+            aspect.aspectRatio=16f/9f;
+            videoImage.gameObject.AddComponent<MenuVideoPreview>().Configure(videoImage,gameplayDemoClip,aspect);
+        }
+
+        private GameObject CreateInstructions(Transform canvas)
+        {
+            var instructions=Image("Instructions",canvas,Vector2.zero,new Vector2(1920,1080),new Color(.008f,.035f,.10f,1f));
+            Stretch(instructions.rectTransform);
+            instructions.raycastTarget=true;
+            for (var lineIndex=0;lineIndex<22;lineIndex++)
+            {
+                var normalized=lineIndex/21f;
+                var line=Image("Instruction Blue Line "+lineIndex,instructions.transform,
+                    new Vector2(0,Mathf.Lerp(-520f,520f,normalized)),new Vector2(1920,2f),
+                    new Color(.03f,.48f,1f,Mathf.Lerp(.08f,.24f,1f-Mathf.Abs(normalized-.5f)*2f)));
+                line.rectTransform.anchorMin=new Vector2(0f,.5f);
+                line.rectTransform.anchorMax=new Vector2(1f,.5f);
+                line.rectTransform.sizeDelta=new Vector2(0f,2f);
+                line.raycastTarget=false;
+            }
+            var artwork=Raw("Instruction Artwork",instructions.transform,Vector2.zero,new Vector2(1672,941),instructionsTexture);
+            artwork.raycastTarget=false;
+            var aspect=artwork.gameObject.AddComponent<AspectRatioFitter>();
+            aspect.aspectMode=AspectRatioFitter.AspectMode.FitInParent;
+            aspect.aspectRatio=1672f/941f;
+            return instructions.gameObject;
+        }
+
+        private static void ConfigureMenuNavigation(Button play,Button solo,Button versus)
+        {
+            play.navigation=ExplicitNavigation(solo,solo,versus,solo);
+            solo.navigation=ExplicitNavigation(play,play,versus,play);
+            versus.navigation=ExplicitNavigation(play,solo,solo,play);
+        }
+
+        private static Navigation ExplicitNavigation(Selectable up,Selectable left,Selectable right,Selectable down)
+        {
+            return new Navigation
+            {
+                mode=Navigation.Mode.Explicit,
+                selectOnUp=up,
+                selectOnLeft=left,
+                selectOnRight=right,
+                selectOnDown=down
+            };
+        }
+
+        private void WarnMissingAsset(Object asset,string field)
+        {
+            if (asset == null) Debug.LogWarning($"[MainMenu] Falta el asset '{field}'.",this);
         }
 
         private static void CreateEventSystem()
@@ -51,19 +174,94 @@ namespace Surexs.DanceOff.Core
             var go=new GameObject("EventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule));
             go.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
         }
+
         private static Transform CreateCanvas()
-        { var go=new GameObject("Menu Canvas",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster)); var c=go.GetComponent<Canvas>(); c.renderMode=RenderMode.ScreenSpaceOverlay; var s=go.GetComponent<CanvasScaler>(); s.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize; s.referenceResolution=new Vector2(1920,1080); return go.transform; }
-        private static GameObject Panel(string name,Transform parent)
-        { var go=new GameObject(name,typeof(RectTransform),typeof(Image)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.sizeDelta=new Vector2(760,570); r.anchoredPosition=new Vector2(0,-100); var image=go.GetComponent<Image>(); image.color=SurexsVisualTheme.Surface; SurexsVisualTheme.ApplyRounded(image); var shadow=go.AddComponent<Shadow>(); shadow.effectColor=new Color(0,0,0,.45f); shadow.effectDistance=new Vector2(0,-10); go.AddComponent<UiPanelTransition>(); return go; }
-        private static Button Button(string name,Transform parent,Vector2 pos,string label)
-            => Button(name,parent,pos,label,SurexsVisualTheme.Primary);
-        private static Button Button(string name,Transform parent,Vector2 pos,string label,Color color)
-            => Button(name,parent,pos,label,color,new Vector2(420,78));
-        private static Button Button(string name,Transform parent,Vector2 pos,string label,Color color,Vector2 size)
-        { var image=Image(name,parent,pos,size,color); var outline=image.gameObject.AddComponent<Outline>(); outline.effectColor=new Color(1,1,1,.24f); outline.effectDistance=new Vector2(2,-2); var b=image.gameObject.AddComponent<Button>(); b.targetGraphic=image; b.transition=Selectable.Transition.ColorTint; SurexsVisualTheme.StyleButton(b,color); Text("Label",image.transform,Vector2.zero,size,label,26); return b; }
+        {
+            var go=new GameObject("Menu Canvas",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));
+            var canvas=go.GetComponent<Canvas>();
+            canvas.renderMode=RenderMode.ScreenSpaceOverlay;
+            canvas.pixelPerfect=true;
+            var scaler=go.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution=new Vector2(1920,1080);
+            scaler.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight=.5f;
+            return go.transform;
+        }
+
+        private static RectTransform Rect(string name,Transform parent,Vector2 pos,Vector2 size)
+        {
+            var go=new GameObject(name,typeof(RectTransform));
+            var rect=go.GetComponent<RectTransform>();
+            rect.SetParent(parent,false);
+            rect.anchoredPosition=pos;
+            rect.sizeDelta=size;
+            return rect;
+        }
+
         private static Image Image(string name,Transform parent,Vector2 pos,Vector2 size,Color color)
-        { var go=new GameObject(name,typeof(RectTransform),typeof(Image)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var i=go.GetComponent<Image>(); i.color=color; return i; }
+        {
+            var go=new GameObject(name,typeof(RectTransform),typeof(Image));
+            var rect=go.GetComponent<RectTransform>();
+            rect.SetParent(parent,false);
+            rect.anchoredPosition=pos;
+            rect.sizeDelta=size;
+            var image=go.GetComponent<Image>();
+            image.color=color;
+            return image;
+        }
+
+        private static RawImage Raw(string name,Transform parent,Vector2 pos,Vector2 size,Texture texture)
+        {
+            var go=new GameObject(name,typeof(RectTransform),typeof(RawImage));
+            var rect=go.GetComponent<RectTransform>();
+            rect.SetParent(parent,false);
+            rect.anchoredPosition=pos;
+            rect.sizeDelta=size;
+            var image=go.GetComponent<RawImage>();
+            image.texture=texture;
+            image.color=Color.white;
+            return image;
+        }
+
+        private static Button TextureButton(string name,Transform parent,Vector2 pos,Vector2 size,string label,
+            Texture texture,int fontSize)
+        {
+            var image=Raw(name,parent,pos,size,texture);
+            image.raycastTarget=true;
+            var button=image.gameObject.AddComponent<Button>();
+            button.targetGraphic=image;
+            button.transition=Selectable.Transition.ColorTint;
+            SurexsVisualTheme.StyleButton(button,Color.white);
+            var text=Text("Label",image.transform,Vector2.zero,new Vector2(size.x*.78f,size.y*.58f),label,fontSize);
+            text.font=SurexsVisualTheme.BodyFont;
+            return button;
+        }
+
         private static Text Text(string name,Transform parent,Vector2 pos,Vector2 size,string value,int fontSize)
-        { var go=new GameObject(name,typeof(RectTransform),typeof(Text)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var t=go.GetComponent<Text>(); t.font=SurexsVisualTheme.BodyFont; t.text=value; t.fontSize=fontSize; t.fontStyle=FontStyle.Bold; t.alignment=TextAnchor.MiddleCenter; t.color=SurexsVisualTheme.TextPrimary; return t; }
+        {
+            var go=new GameObject(name,typeof(RectTransform),typeof(Text));
+            var rect=go.GetComponent<RectTransform>();
+            rect.SetParent(parent,false);
+            rect.anchoredPosition=pos;
+            rect.sizeDelta=size;
+            var text=go.GetComponent<Text>();
+            text.font=SurexsVisualTheme.BodyFont;
+            text.text=value;
+            text.fontSize=fontSize;
+            text.fontStyle=FontStyle.Bold;
+            text.alignment=TextAnchor.MiddleCenter;
+            text.color=SurexsVisualTheme.TextPrimary;
+            text.raycastTarget=false;
+            return text;
+        }
+
+        private static void Stretch(RectTransform rect)
+        {
+            rect.anchorMin=Vector2.zero;
+            rect.anchorMax=Vector2.one;
+            rect.offsetMin=Vector2.zero;
+            rect.offsetMax=Vector2.zero;
+        }
     }
 }
