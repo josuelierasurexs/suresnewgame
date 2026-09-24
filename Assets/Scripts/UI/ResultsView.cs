@@ -16,6 +16,9 @@ namespace Surexs.DanceOff.UI
         private Text player2Header;
         private GameObject player1Card;
         private GameObject player2Card;
+        private GameObject summaryPage;
+        private GameObject socialPage;
+        private Button next;
         private Button rematch;
         private Button menu;
         private UiPanelTransition transition;
@@ -24,13 +27,18 @@ namespace Surexs.DanceOff.UI
 
         public void Configure(GameObject panelObject, Text titleLabel, Text player1Label, Text player2Label,
             Text player1HeaderLabel,Text player2HeaderLabel,GameObject player1CardObject,
-            GameObject player2CardObject, Button rematchButton, Button menuButton)
+            GameObject player2CardObject,GameObject summaryPageObject,GameObject socialPageObject,
+            Button nextButton,Button rematchButton,Button menuButton)
         {
             panel=panelObject; title=titleLabel; player1=player1Label; player2=player2Label;
             player1Header=player1HeaderLabel; player2Header=player2HeaderLabel;
-            player1Card=player1CardObject; player2Card=player2CardObject; rematch=rematchButton; menu=menuButton;
+            player1Card=player1CardObject; player2Card=player2CardObject;
+            summaryPage=summaryPageObject; socialPage=socialPageObject;
+            next=nextButton; rematch=rematchButton; menu=menuButton;
             transition=panel.GetComponent<UiPanelTransition>();
             if (transition == null) transition=panel.AddComponent<UiPanelTransition>();
+            next.onClick.RemoveListener(ShowSocialPage);
+            next.onClick.AddListener(ShowSocialPage);
             rematch.onClick.RemoveListener(RequestRematch);
             rematch.onClick.AddListener(RequestRematch);
             menu.onClick.RemoveListener(RequestMenu);
@@ -41,6 +49,8 @@ namespace Surexs.DanceOff.UI
         public void Show(GameResult result)
         {
             transition.SetVisible(true);
+            summaryPage.SetActive(true);
+            socialPage.SetActive(false);
             if (result.Mode == GameMode.Solo)
             {
                 ConfigureCard(player1Card,player1,new Vector2(125,35),new Vector2(650,725),new Vector2(0,-85),new Vector2(540,520));
@@ -74,12 +84,19 @@ namespace Surexs.DanceOff.UI
                 player2.text=Format(result.Player2,true);
             }
             rematch.GetComponentInChildren<Text>().text=result.Mode == GameMode.Solo ? "REINTENTAR" : "REVANCHA";
-            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(rematch.gameObject);
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(next.gameObject);
         }
 
         public void Hide() { if (transition != null) transition.SetVisible(false,true); else if (panel != null) panel.SetActive(false); }
         private void RequestRematch() { RematchRequested?.Invoke(); }
         private void RequestMenu() { MenuRequested?.Invoke(); }
+
+        private void ShowSocialPage()
+        {
+            summaryPage.SetActive(false);
+            socialPage.SetActive(true);
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(rematch.gameObject);
+        }
 
         private static void ConfigureCard(GameObject card,Text content,Vector2 position,Vector2 size,
             Vector2 contentPosition,Vector2 contentSize)
@@ -110,17 +127,41 @@ namespace Surexs.DanceOff.UI
             var scoreLabelSize=compact ? 24 : 30;
             var scoreSize=compact ? 58 : 82;
             var accuracySize=compact ? 23 : 30;
+            var prizeLabelSize=compact ? 19 : 25;
+            var prizeScoreSize=compact ? 40 : 54;
+            var prizeLevelSize=compact ? 17 : 22;
             var statSize=compact ? 21 : 27;
             var comboSize=compact ? 25 : 32;
             return $"<size={scoreLabelSize}>SCORE</size>\n"+
                    $"<size={scoreSize}>{r.Score:N0}</size>\n"+
+                   $"<size={prizeLabelSize}>PUNTAJE PREMIOS</size>\n"+
+                   $"<size={prizeScoreSize}><color=#FFD43B>{r.PrizeScore:N0}</color></size>\n"+
+                   $"<size={prizeLevelSize}>NIVEL  {PrizeLevelLabel(r.PrizeLevel)}</size>\n"+
                    $"<size={accuracySize}>ACCURACY  <color=#FFD43B>{r.Accuracy:P1}</color></size>\n\n"+
                    $"<size={statSize}><color=#2FC8FF>PERFECT</color>  {r.Perfects}\n"+
                    $"<color=#50E09A>GREAT</color>  {r.Greats}\n"+
                    $"GOOD  {r.Goods}\n"+
-                   $"<color=#FF5269>MISS  {r.Misses}</color></size>\n\n"+
+                   $"<color=#FF5269>MISS  {r.Misses}</color></size>\n"+
                    $"<size={comboSize}>MAX COMBO  <color=#FFD43B>{r.MaxCombo}</color></size>";
         }
-        private void OnDestroy() { if (rematch != null) rematch.onClick.RemoveListener(RequestRematch); if (menu != null) menu.onClick.RemoveListener(RequestMenu); }
+
+        private static string PrizeLevelLabel(PrizeLevel level)
+        {
+            switch (level)
+            {
+                case PrizeLevel.Intermediate:
+                    return "INTERMEDIO";
+                case PrizeLevel.Advanced:
+                    return "AVANZADO";
+                default:
+                    return "NOVATO";
+            }
+        }
+        private void OnDestroy()
+        {
+            if (next != null) next.onClick.RemoveListener(ShowSocialPage);
+            if (rematch != null) rematch.onClick.RemoveListener(RequestRematch);
+            if (menu != null) menu.onClick.RemoveListener(RequestMenu);
+        }
     }
 }

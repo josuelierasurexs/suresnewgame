@@ -41,7 +41,7 @@ namespace Surexs.DanceOff.Rhythm
 
             var text = textObject.GetComponent<Text>();
             text.font = SurexsVisualTheme.Font;
-            text.fontSize = 25;
+            text.fontSize = 42;
             text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
@@ -57,7 +57,7 @@ namespace Surexs.DanceOff.Rhythm
             canvasGroup = GetComponent<CanvasGroup>();
             canvasGroup.alpha = 1f;
             baseColor = ColorFor(chartEvent.Direction);
-            baseLabel = $"{SymbolFor(chartEvent.Direction)}  {chartEvent.Time:0.00}";
+            baseLabel = SymbolFor(chartEvent.Direction);
             status = RhythmNoteStatus.Pending;
             background.color = baseColor;
             label.text = baseLabel;
@@ -87,7 +87,7 @@ namespace Surexs.DanceOff.Rhythm
                 ? new Color(0.18f, 0.86f, 0.48f, 1f)
                 : new Color(0.92f, 0.18f, 0.22f, 1f);
             label.color = Color.white;
-            label.text = $"{baseLabel}\n{result.ToString().ToUpperInvariant()}";
+            label.text = baseLabel;
         }
 
         private static string SymbolFor(RhythmDirection direction)
@@ -97,7 +97,7 @@ namespace Surexs.DanceOff.Rhythm
                 case RhythmDirection.Left:
                     return "←";
                 case RhythmDirection.Center:
-                    return "●";
+                    return "↑";
                 case RhythmDirection.Right:
                     return "→";
                 default:

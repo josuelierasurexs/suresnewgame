@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3501729c3ed749f89989c676303c4a6c, type: 3}
   m_Name:
   m_EditorClassIdentifier: Surexs.DanceOff.Core::Surexs.DanceOff.Core.MainMenuSceneBootstrap
-  titleFont: {fileID: 12800000, guid: 860a44a1de8e7e04e96de74d5e4f06ca, type: 3}
+  titleFont: {fileID: 12800000, guid: aa60251632860fe42b7a984028553af8, type: 3}
   bodyFont: {fileID: 12800000, guid: aa60251632860fe42b7a984028553af8, type: 3}
   brokerHeroLogoTexture: {fileID: 2800000, guid: 94a544d3b97ae3c46a04f696291cfe6b, type: 3}
   surexsLogoTexture: {fileID: 2800000, guid: b75986ddd65c4bf984cb9046f3a6964a, type: 3}
@@ -52,3 +52,30 @@ MonoBehaviour:
   greenButtonTexture: {fileID: 2800000, guid: a43f3ef507634da9b47c1c8e3ad773ee, type: 3}
   gameplayDemoClip: {fileID: 32900000, guid: 66ed80c31cad4596a62002f19391da4e, type: 3}
   instructionsTexture: {fileID: 2800000, guid: 17efc59dd5b2492c9acb640f931716f9, type: 3}
+  readyHoldDuration: 0.8
+  player1InputSource: 1
+  player2InputSource: 1
+  player1GamepadIndex: 0
+  player2GamepadIndex: 1
+  player1GamepadDevice: XInputControllerWindows
+  player2GamepadDevice: XInputControllerWindows1
+  player1Joystick:
+    joystickIndex: 0
+    deviceProduct:
+    deviceManufacturer:
+    useExplicitDirectionalPathsOnly: 0
+    axisThreshold: 0.5
+    leftButtonPaths: []
+    centerButtonPaths: []
+    rightButtonPaths: []
+    diagnosticLogging: 0
+  player2Joystick:
+    joystickIndex: 1
+    deviceProduct:
+    deviceManufacturer:
+    useExplicitDirectionalPathsOnly: 0
+    axisThreshold: 0.5
+    leftButtonPaths: []
+    centerButtonPaths: []
+    rightButtonPaths: []
+    diagnosticLogging: 0

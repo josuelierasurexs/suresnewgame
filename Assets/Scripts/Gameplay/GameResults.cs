@@ -3,6 +3,35 @@ namespace Surexs.DanceOff.Gameplay
     public enum GameMode { Solo, LocalVersus }
     public enum GameFlowState { Gameplay, Results }
     public enum VersusOutcome { Tie, Player1Wins, Player2Wins }
+    public enum PrizeLevel { Novice, Intermediate, Advanced }
+
+    public static class PrizeScoreCalculator
+    {
+        private const int IntermediateScoreStart = 5000;
+        private const int AdvancedScoreStart = 11001;
+        private const int AdvancedScorePerPrizePoint = 60;
+
+        public static int Calculate(int gameScore)
+        {
+            var score = System.Math.Max(0, gameScore);
+            if (score < IntermediateScoreStart)
+                return (int)((long)score * 100L / IntermediateScoreStart);
+
+            if (score < AdvancedScoreStart)
+                return 100 + (int)((long)(score - IntermediateScoreStart) * 99L /
+                                   (AdvancedScoreStart - 1 - IntermediateScoreStart));
+
+            var advancedPoints = (long)(score - AdvancedScoreStart) / AdvancedScorePerPrizePoint;
+            return (int)System.Math.Min(int.MaxValue, 200L + advancedPoints);
+        }
+
+        public static PrizeLevel LevelFor(int gameScore)
+        {
+            if (gameScore >= AdvancedScoreStart) return PrizeLevel.Advanced;
+            if (gameScore >= IntermediateScoreStart) return PrizeLevel.Intermediate;
+            return PrizeLevel.Novice;
+        }
+    }
 
     public readonly struct PlayerResult
     {
@@ -18,6 +47,8 @@ namespace Surexs.DanceOff.Gameplay
         public int Misses { get; }
         public int MaxCombo { get; }
         public int FinalMultiplier { get; }
+        public int PrizeScore => PrizeScoreCalculator.Calculate(Score);
+        public PrizeLevel PrizeLevel => PrizeScoreCalculator.LevelFor(Score);
         public int TotalNotes => Perfects + Greats + Goods + Misses;
         public double Accuracy => CalculateAccuracy(Perfects, Greats, Goods, TotalNotes);
 

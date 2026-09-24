@@ -21,6 +21,7 @@ namespace Surexs.DanceOff.Core
         [Header("Typography")]
         [SerializeField] private Font titleFont;
         [SerializeField] private Font bodyFont;
+        [SerializeField] private Font hitPhraseFont;
         [Header("Input Sources")]
         [SerializeField] private RhythmInputSourceType player1InputSource = RhythmInputSourceType.Gamepad;
         [SerializeField] private RhythmInputSourceType player2InputSource = RhythmInputSourceType.Gamepad;
@@ -42,6 +43,9 @@ namespace Surexs.DanceOff.Core
         [SerializeField] private Texture missTexture;
         [SerializeField] private Texture blueStarTexture;
         [SerializeField] private Texture yellowStarTexture;
+        [SerializeField] private Texture leftControlTexture;
+        [SerializeField] private Texture centerControlTexture;
+        [SerializeField] private Texture rightControlTexture;
         [SerializeField] private Sprite surexsLogo;
         [Header("Versus Gameplay Graphics")]
         [SerializeField] private Texture background2Player;
@@ -53,6 +57,7 @@ namespace Surexs.DanceOff.Core
         [SerializeField] private Texture resultsRetryButtonTexture;
         [SerializeField] private Texture resultsMenuButtonTexture;
         [SerializeField] private Texture resultsSurexsLogoTexture;
+        [SerializeField] private Texture resultsQrTexture;
         [SerializeField, Min(0.05f)] private float poseDuration = 0.35f;
         [SerializeField] private PoseData[] poseDefinitions =
         {
@@ -112,6 +117,9 @@ namespace Surexs.DanceOff.Core
             shared.Root.AddComponent<GameplayNavigationController>().Configure(flow,shared.Controller,results);
             if (song == null) Debug.LogWarning("[Bootstrap] No hay canción asignada.", this);
             if (chart == null) Debug.LogWarning("[Bootstrap] No hay chart asignado.", this);
+            if (leftControlTexture == null) Debug.LogWarning("[Bootstrap] Falta left_control.png.",this);
+            if (centerControlTexture == null) Debug.LogWarning("[Bootstrap] Falta center_control.png.",this);
+            if (rightControlTexture == null) Debug.LogWarning("[Bootstrap] Falta right_control.png.",this);
         }
 
         private void CreateSoloBackdrop(Transform canvas)
@@ -178,15 +186,19 @@ namespace Surexs.DanceOff.Core
             SurexsVisualTheme.ApplyRounded(brandPanel);
             Raw("Broker Hero Logo",brandPanel.transform,Vector2.zero,new Vector2(290,145),brokerHeroLogoTexture);
 
-            if (surexsLogo != null)
+            if (resultsSurexsLogoTexture != null)
             {
-                var logo=Image("Versus Surexs Logo",canvas,new Vector2(0,-480),new Vector2(230,62),Color.white);
-                logo.sprite=surexsLogo; logo.preserveAspect=true;
+                var aspect=resultsSurexsLogoTexture.height>0
+                    ? (float)resultsSurexsLogoTexture.width/resultsSurexsLogoTexture.height
+                    : 3.7f;
+                var logo=Raw("Versus Surexs Logo",canvas,new Vector2(0,-480),new Vector2(230,230/aspect),resultsSurexsLogoTexture);
+                var fitter=logo.gameObject.AddComponent<AspectRatioFitter>();
+                fitter.aspectMode=AspectRatioFitter.AspectMode.WidthControlsHeight;
+                fitter.aspectRatio=aspect;
             }
             else
             {
-                var logoFallback=Text("Versus Surexs Logo Fallback",canvas,new Vector2(0,-480),new Vector2(230,62),"Surexs",34);
-                logoFallback.fontStyle=FontStyle.BoldAndItalic;
+                Debug.LogWarning("[Bootstrap] Falta surexs-logo.png para el logo inferior de Versus.",this);
             }
 
             Raw("Versus Blue Star",canvas,new Vector2(-175,285),new Vector2(54,54),blueStarTexture);
@@ -201,6 +213,7 @@ namespace Surexs.DanceOff.Core
             WarnMissingVersusAsset(missTexture,nameof(missTexture));
             WarnMissingVersusAsset(blueStarTexture,nameof(blueStarTexture));
             WarnMissingVersusAsset(yellowStarTexture,nameof(yellowStarTexture));
+            WarnMissingVersusAsset(resultsSurexsLogoTexture,nameof(resultsSurexsLogoTexture));
         }
 
         private void WarnMissingVersusAsset(Object asset,string field)
@@ -362,7 +375,6 @@ namespace Surexs.DanceOff.Core
             string gamepadDevice, JoystickInputConfig joystickConfig, PlayerVisualLayout layout)
         {
             var soloRedesign=layout==PlayerVisualLayout.Solo;
-            var playerTwo=layout==PlayerVisualLayout.VersusRight;
             var labels = new[] {"LEFT ←","CENTER ●","RIGHT →"};
             var hitZones = new Image[3];
             var hitY=soloRedesign ? -285f : -355f;
@@ -374,18 +386,26 @@ namespace Surexs.DanceOff.Core
                 var hitOutline=hitZones[i].gameObject.AddComponent<Outline>(); hitOutline.effectColor=new Color(.45f,1f,.72f,.9f); hitOutline.effectDistance=new Vector2(3,-3);
                 var laneLabel=Text(name+" Label "+i, canvas, new Vector2(lanes[i],soloRedesign ? 350f : 125f), new Vector2(210,34), labels[i], soloRedesign ? 22 : 16);
                 laneLabel.font=SurexsVisualTheme.TitleFont;
-                var key=playerTwo ? (i==0 ? "←" : i==1 ? "↑ / ↓" : "→") : (i==0 ? "A" : i==1 ? "W / S" : "D");
                 var keyY=soloRedesign ? -420f : -450f;
-                var keyWidth=soloRedesign ? 112f : 105f;
-                var keyPanel=Image(name+" Key "+i,canvas,new Vector2(lanes[i],keyY),new Vector2(keyWidth,46),new Color(.02f,.18f,.34f,.94f));
-                SurexsVisualTheme.ApplyRounded(keyPanel);
-                var keyOutline=keyPanel.gameObject.AddComponent<Outline>(); keyOutline.effectColor=new Color(accent.r,accent.g,accent.b,.95f); keyOutline.effectDistance=new Vector2(2,-2);
-                var keyLabel=Text(name+" Key Label "+i,keyPanel.transform,Vector2.zero,new Vector2(keyWidth,46),key,soloRedesign ? 20 : 18);
-                keyLabel.font=SurexsVisualTheme.BodyFont;
+                var controlTexture=i==0 ? leftControlTexture : i==1 ? centerControlTexture : rightControlTexture;
+                var iconHeight=soloRedesign ? 109f : 89f;
+                var iconAspect=controlTexture != null && controlTexture.height>0
+                    ? (float)controlTexture.width/controlTexture.height
+                    : 720f/353f;
+                var iconSize=new Vector2(iconHeight*iconAspect,iconHeight);
+                var controlIcon=Raw(name+" Control Icon "+i,canvas,new Vector2(lanes[i],keyY),iconSize,controlTexture);
+                controlIcon.raycastTarget=false;
+                var aspectFitter=controlIcon.gameObject.AddComponent<AspectRatioFitter>();
+                aspectFitter.aspectMode=AspectRatioFitter.AspectMode.HeightControlsWidth;
+                aspectFitter.aspectRatio=iconAspect;
+                var iconGlow=controlIcon.gameObject.AddComponent<Outline>();
+                iconGlow.effectColor=new Color(accent.r,accent.g,accent.b,.82f);
+                iconGlow.effectDistance=new Vector2(2,-2);
             }
             RawImage judgmentImage=null; Text points=null;
             Text scoreLabel=null; Text comboLabel=null; Text songLabel=null; Text statsLabel=null; Image progressFill=null;
             JudgmentStarBurstView starBurst=null;
+            HitPhraseFeedbackView hitPhrase=null;
             var milestone=Text(name+" Milestone",canvas,new Vector2(x,soloRedesign ? 300f : 145f),new Vector2(500,50),"",soloRedesign ? 27 : 22);
             VisualSet visual;
             if (soloRedesign)
@@ -405,6 +425,10 @@ namespace Surexs.DanceOff.Core
                     new Vector2(lanes[0],-285f),new Vector2(lanes[1],-285f),new Vector2(lanes[2],-285f));
                 judgmentImage=Raw("Judgment Image",canvas,new Vector2(520,-285),new Vector2(650,215),null);
                 points=Text("Judgment Points",canvas,new Vector2(520,-395),new Vector2(240,50),"",30);
+                var phraseLabel=Text(name+" Hit Phrase",canvas,new Vector2(470,225),new Vector2(650,72),"",32);
+                phraseLabel.font=hitPhraseFont!=null ? hitPhraseFont : SurexsVisualTheme.BodyFont;
+                hitPhrase=phraseLabel.gameObject.AddComponent<HitPhraseFeedbackView>();
+                hitPhrase.Configure(phraseLabel,false);
                 visual=VisualSolo(canvas,name);
             }
             else
@@ -427,6 +451,11 @@ namespace Surexs.DanceOff.Core
                     new Vector2(lanes[0],hitY),new Vector2(lanes[1],hitY),new Vector2(lanes[2],hitY));
                 judgmentImage=Raw(name+" Judgment Image",canvas,new Vector2(x,62),new Vector2(390,125),null);
                 points=Text(name+" Judgment Points",canvas,new Vector2(x,-5),new Vector2(220,42),"",24);
+                var phraseY=layout==PlayerVisualLayout.VersusLeft ? -95f : -178f;
+                var phraseLabel=Text(name+" Hit Phrase",canvas,new Vector2(0,phraseY),new Vector2(410,50),"",19);
+                phraseLabel.font=hitPhraseFont!=null ? hitPhraseFont : SurexsVisualTheme.BodyFont;
+                hitPhrase=phraseLabel.gameObject.AddComponent<HitPhraseFeedbackView>();
+                hitPhrase.Configure(phraseLabel,true);
             }
             var go=new GameObject(name+" Systems");
             var input=CreateInputSource(go,inputSourceType,gamepadIndex,gamepadAxisThreshold,gamepadDevice,joystickConfig,left,centerPrimary,centerSecondary,right);
@@ -435,7 +464,7 @@ namespace Surexs.DanceOff.Core
             var combo=go.AddComponent<ComboManager>(); combo.Configure(gameplayConfig);
             var score=go.AddComponent<ScoreManager>(); score.Configure(gameplayConfig,combo);
             var feedback=go.AddComponent<GameplayFeedbackView>();
-            feedback.Configure(judgmentImage,points,milestone,perfectTexture,greatTexture,goodTexture,missTexture,starBurst);
+            feedback.Configure(judgmentImage,points,milestone,perfectTexture,greatTexture,goodTexture,missTexture,starBurst,hitPhrase);
             go.AddComponent<JudgmentProcessor>().Configure(judge,score,combo,feedback);
             var poses=go.AddComponent<PoseController>(); poses.Configure(poseDefinitions,visual.Body,visual.LeftArm,visual.RightArm,visual.BodyImage,visual.PoseLabel);
             SoloCharacterAnimationView characterAnimation=null;
@@ -512,19 +541,37 @@ namespace Surexs.DanceOff.Core
         {
             var panel=Raw("Results Panel",canvas,Vector2.zero,new Vector2(1920,1080),background2Player);
             Stretch(panel.rectTransform);
-            Raw("Results Broker Hero Logo",panel.transform,new Vector2(-745,405),new Vector2(390,195),brokerHeroLogoTexture);
-            Raw("Results Character",panel.transform,new Vector2(-720,-120),new Vector2(400,695),resultsCharacterTexture);
-            Raw("Results Surexs Logo",panel.transform,new Vector2(785,-475),new Vector2(250,57),resultsSurexsLogoTexture);
+            var summaryPage=Rect("Results Summary Page",panel.transform,Vector2.zero,new Vector2(1920,1080));
+            Stretch(summaryPage);
+            Raw("Results Broker Hero Logo",summaryPage,new Vector2(-745,405),new Vector2(390,195),brokerHeroLogoTexture);
+            Raw("Results Character",summaryPage,new Vector2(-720,-120),new Vector2(400,695),resultsCharacterTexture);
+            Raw("Results Surexs Logo",summaryPage,new Vector2(785,-475),new Vector2(250,57),resultsSurexsLogoTexture);
 
-            var p1Card=Raw("P1 Results Card",panel.transform,new Vector2(125,35),new Vector2(650,725),resultsContainerTexture);
-            var p2Card=Raw("P2 Results Card",panel.transform,new Vector2(420,35),new Vector2(560,625),resultsContainerTexture);
-            var title=Text("Results Title",panel.transform,new Vector2(125,325),new Vector2(520,82),"RESULTADOS",48);
+            var p1Card=Raw("P1 Results Card",summaryPage,new Vector2(125,35),new Vector2(650,725),resultsContainerTexture);
+            var p2Card=Raw("P2 Results Card",summaryPage,new Vector2(420,35),new Vector2(560,625),resultsContainerTexture);
+            var title=Text("Results Title",summaryPage,new Vector2(125,325),new Vector2(520,82),"RESULTADOS",48);
             var p1=Text("P1 Results",p1Card.transform,new Vector2(0,-85),new Vector2(540,520),"",30);
             var p2=Text("P2 Results",p2Card.transform,new Vector2(0,-58),new Vector2(470,450),"",26);
             var p1Header=Text("P1 Results Header",p1Card.transform,new Vector2(0,220),new Vector2(460,48),"PLAYER 1",30);
             var p2Header=Text("P2 Results Header",p2Card.transform,new Vector2(0,255),new Vector2(470,42),"PLAYER 2",23);
-            var retry=TextureButton("Rematch",panel.transform,new Vector2(-75,-435),new Vector2(390,120),"REVANCHA",resultsRetryButtonTexture);
-            var menu=TextureButton("Menu",panel.transform,new Vector2(345,-435),new Vector2(390,120),"MENU",resultsMenuButtonTexture);
+            var next=TextureButton("Next",summaryPage,new Vector2(125,-435),new Vector2(430,120),"SIGUIENTE",resultsRetryButtonTexture);
+            next.navigation=new Navigation
+            {
+                mode=Navigation.Mode.Explicit,
+                selectOnLeft=next,
+                selectOnRight=next,
+                selectOnUp=next,
+                selectOnDown=next
+            };
+
+            var socialPage=Rect("Results Social Page",panel.transform,Vector2.zero,new Vector2(1920,1080));
+            Stretch(socialPage);
+            var socialCard=Raw("Social Results Card",socialPage,new Vector2(0,45),new Vector2(900,900),resultsContainerTexture);
+            var socialTitle=Text("Social Results Title",socialPage,new Vector2(0,420),new Vector2(820,86),"SÍGUENOS EN REDES",46);
+            var qr=Raw("Social QR",socialCard.transform,new Vector2(0,-25),new Vector2(680,601),resultsQrTexture);
+            qr.raycastTarget=false;
+            var retry=TextureButton("Rematch",socialPage,new Vector2(-215,-445),new Vector2(390,120),"REVANCHA",resultsRetryButtonTexture);
+            var menu=TextureButton("Menu",socialPage,new Vector2(215,-445),new Vector2(390,120),"MENU",resultsMenuButtonTexture);
             retry.navigation=new Navigation
             {
                 mode=Navigation.Mode.Explicit,
@@ -546,9 +593,14 @@ namespace Surexs.DanceOff.Core
             p2.font=SurexsVisualTheme.BodyFont;
             p1Header.font=SurexsVisualTheme.TitleFont;
             p2Header.font=SurexsVisualTheme.TitleFont;
+            socialTitle.font=SurexsVisualTheme.TitleFont;
+            next.GetComponentInChildren<Text>().font=SurexsVisualTheme.BodyFont;
             retry.GetComponentInChildren<Text>().font=SurexsVisualTheme.BodyFont;
             menu.GetComponentInChildren<Text>().font=SurexsVisualTheme.BodyFont;
-            var view=panel.gameObject.AddComponent<ResultsView>(); view.Configure(panel.gameObject,title,p1,p2,p1Header,p2Header,p1Card.gameObject,p2Card.gameObject,retry,menu);
+            socialPage.gameObject.SetActive(false);
+            var view=panel.gameObject.AddComponent<ResultsView>();
+            view.Configure(panel.gameObject,title,p1,p2,p1Header,p2Header,p1Card.gameObject,p2Card.gameObject,
+                summaryPage.gameObject,socialPage.gameObject,next,retry,menu);
             WarnMissingResultsAsset(background2Player,nameof(background2Player));
             WarnMissingResultsAsset(brokerHeroLogoTexture,nameof(brokerHeroLogoTexture));
             WarnMissingResultsAsset(resultsCharacterTexture,nameof(resultsCharacterTexture));
@@ -556,6 +608,7 @@ namespace Surexs.DanceOff.Core
             WarnMissingResultsAsset(resultsRetryButtonTexture,nameof(resultsRetryButtonTexture));
             WarnMissingResultsAsset(resultsMenuButtonTexture,nameof(resultsMenuButtonTexture));
             WarnMissingResultsAsset(resultsSurexsLogoTexture,nameof(resultsSurexsLogoTexture));
+            WarnMissingResultsAsset(resultsQrTexture,nameof(resultsQrTexture));
             return view;
         }
 
@@ -641,7 +694,7 @@ namespace Surexs.DanceOff.Core
         private static void Stretch(RectTransform rect)
         { rect.anchorMin=Vector2.zero; rect.anchorMax=Vector2.one; rect.offsetMin=Vector2.zero; rect.offsetMax=Vector2.zero; }
         private static Text Text(string name,Transform parent,Vector2 pos,Vector2 size,string value,int fontSize)
-        { var go=new GameObject(name,typeof(RectTransform),typeof(Text)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var t=go.GetComponent<Text>(); t.font=SurexsVisualTheme.Font; t.fontSize=fontSize; t.fontStyle=FontStyle.Bold; t.alignment=TextAnchor.MiddleCenter; t.color=SurexsVisualTheme.TextPrimary; t.text=value; t.raycastTarget=false; return t; }
+        { var go=new GameObject(name,typeof(RectTransform),typeof(Text)); var r=go.GetComponent<RectTransform>(); r.SetParent(parent,false); r.anchoredPosition=pos; r.sizeDelta=size; var t=go.GetComponent<Text>(); t.font=SurexsVisualTheme.BodyFont; t.fontSize=fontSize; t.fontStyle=FontStyle.Normal; t.alignment=TextAnchor.MiddleCenter; t.color=SurexsVisualTheme.TextPrimary; t.text=value; t.raycastTarget=false; return t; }
         private static Button Button(string name,Transform parent,Vector2 pos,Vector2 size,string label,Color color)
         { var image=Image(name,parent,pos,size,color); image.raycastTarget=true; var outline=image.gameObject.AddComponent<Outline>(); outline.effectColor=new Color(1,1,1,.25f); outline.effectDistance=new Vector2(2,-2); var button=image.gameObject.AddComponent<Button>(); button.targetGraphic=image; button.transition=Selectable.Transition.ColorTint; SurexsVisualTheme.StyleButton(button,color); Text("Label",image.transform,Vector2.zero,size,label,20); return button; }
         private static Button TextureButton(string name,Transform parent,Vector2 pos,Vector2 size,string label,Texture texture)

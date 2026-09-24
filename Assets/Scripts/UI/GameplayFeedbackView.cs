@@ -17,6 +17,7 @@ namespace Surexs.DanceOff.UI
         private Texture goodTexture;
         private Texture missTexture;
         private JudgmentStarBurstView starBurstView;
+        private HitPhraseFeedbackView hitPhraseView;
         private bool useImageFeedback;
 
         private float judgmentRemaining;
@@ -35,11 +36,13 @@ namespace Surexs.DanceOff.UI
         }
 
         public void Configure(RawImage image, Text points, Text milestone, Texture perfect, Texture great,
-            Texture good, Texture miss, JudgmentStarBurstView stars = null)
+            Texture good, Texture miss, JudgmentStarBurstView stars = null,
+            HitPhraseFeedbackView hitPhrases = null)
         {
             judgmentImage=image; pointsLabel=points; milestoneLabel=milestone;
             perfectTexture=perfect; greatTexture=great; goodTexture=good; missTexture=miss;
             starBurstView=stars;
+            hitPhraseView=hitPhrases;
             judgmentGroup=GetOrAddCanvasGroup(judgmentImage);
             milestoneGroup=GetOrAddCanvasGroup(milestoneLabel);
             displaySeconds=.55f;
@@ -64,6 +67,7 @@ namespace Surexs.DanceOff.UI
             judgmentGroup.alpha = 1f;
             JudgmentTransform.localScale = Vector3.one * .55f;
             starBurstView?.Play(result, hitDirection);
+            if (result != RhythmJudgmentResult.Miss) hitPhraseView?.Play();
 
             if (!string.IsNullOrEmpty(milestone))
             {
@@ -131,6 +135,7 @@ namespace Surexs.DanceOff.UI
             judgmentRemaining = 0f;
             milestoneRemaining = 0f;
             starBurstView?.ResetView();
+            hitPhraseView?.ResetView();
             Clear();
         }
 
@@ -173,6 +178,81 @@ namespace Surexs.DanceOff.UI
                 case RhythmJudgmentResult.Good: return SurexsVisualTheme.Accent;
                 default: return SurexsVisualTheme.Error;
             }
+        }
+    }
+
+    public sealed class HitPhraseFeedbackView : MonoBehaviour
+    {
+        private const float MaxRotation = 30f;
+
+        private static readonly string[] Phrases =
+        {
+            "Gestionando Polizas",
+            "Dando alta a asegurados",
+            "Atendiendo Siniestros",
+            "Mejorando tiempos operativos"
+        };
+
+        private static readonly Color[] PastelColors =
+        {
+            new Color(.52f,.76f,.92f),
+            new Color(.95f,.82f,.48f),
+            new Color(.55f,.84f,.67f)
+        };
+
+        private Text label;
+        private CanvasGroup group;
+        private Vector2 basePosition;
+        private float duration;
+        private float remaining;
+        private float targetScale;
+
+        public void Configure(Text phraseLabel,bool compact)
+        {
+            label=phraseLabel;
+            group=label.GetComponent<CanvasGroup>();
+            if (group == null) group=label.gameObject.AddComponent<CanvasGroup>();
+            basePosition=label.rectTransform.anchoredPosition;
+            duration=compact ? .58f : .72f;
+            targetScale=compact ? .9f : 1f;
+            ResetView();
+        }
+
+        public void Play()
+        {
+            if (label == null) return;
+            label.text=Phrases[Random.Range(0,Phrases.Length)];
+            label.color=PastelColors[Random.Range(0,PastelColors.Length)];
+            label.rectTransform.anchoredPosition=basePosition+new Vector2(Random.Range(-18f,18f),Random.Range(-8f,9f));
+            label.rectTransform.localEulerAngles=new Vector3(0f,0f,Random.Range(-MaxRotation,MaxRotation));
+            label.rectTransform.localScale=Vector3.one*(targetScale*.48f);
+            group.alpha=1f;
+            remaining=duration;
+        }
+
+        private void Update()
+        {
+            if (remaining<=0f || label==null) return;
+            remaining-=Time.unscaledDeltaTime;
+            var elapsed=1f-Mathf.Clamp01(remaining/duration);
+            float scale;
+            if (elapsed<.24f) scale=Mathf.Lerp(.48f,1.13f,elapsed/.24f);
+            else if (elapsed<.42f) scale=Mathf.Lerp(1.13f,1f,(elapsed-.24f)/.18f);
+            else scale=Mathf.Lerp(1f,1.05f,(elapsed-.42f)/.58f);
+            label.rectTransform.localScale=Vector3.one*(targetScale*scale);
+            group.alpha=elapsed<.55f ? 1f : 1f-Mathf.InverseLerp(.55f,1f,elapsed);
+            if (remaining<=0f) ResetView();
+        }
+
+        public void ResetView()
+        {
+            remaining=0f;
+            if (label==null) return;
+            label.text=string.Empty;
+            label.rectTransform.anchoredPosition=basePosition;
+            label.rectTransform.localEulerAngles=Vector3.zero;
+            label.rectTransform.localScale=Vector3.one*targetScale;
+            if (group!=null) group.alpha=0f;
         }
     }
 }

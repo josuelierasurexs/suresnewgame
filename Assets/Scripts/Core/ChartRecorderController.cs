@@ -379,7 +379,7 @@ namespace Surexs.DanceOff.Core
             var label = labelObject.GetComponent<Text>();
             label.font = SurexsVisualTheme.BodyFont;
             label.fontSize = 22;
-            label.fontStyle = FontStyle.Bold;
+            label.fontStyle = FontStyle.Normal;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;
             label.raycastTarget = false;

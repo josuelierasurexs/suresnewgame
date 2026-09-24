@@ -1,6 +1,8 @@
+using Surexs.DanceOff.Input;
 using Surexs.DanceOff.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -20,6 +22,16 @@ namespace Surexs.DanceOff.Core
         [SerializeField] private VideoClip gameplayDemoClip;
         [Header("Instructions")]
         [SerializeField] private Texture instructionsTexture;
+        [SerializeField, Range(0.25f, 2f)] private float readyHoldDuration = 0.8f;
+        [Header("Ready Input Sources")]
+        [SerializeField] private RhythmInputSourceType player1InputSource = RhythmInputSourceType.Gamepad;
+        [SerializeField] private RhythmInputSourceType player2InputSource = RhythmInputSourceType.Gamepad;
+        [SerializeField, Min(0)] private int player1GamepadIndex;
+        [SerializeField, Min(0)] private int player2GamepadIndex = 1;
+        [SerializeField] private string player1GamepadDevice = "XInputControllerWindows";
+        [SerializeField] private string player2GamepadDevice = "XInputControllerWindows1";
+        [SerializeField] private JoystickInputConfig player1Joystick = new JoystickInputConfig();
+        [SerializeField] private JoystickInputConfig player2Joystick = new JoystickInputConfig { joystickIndex = 1 };
 
         private void Awake()
         {
@@ -39,15 +51,26 @@ namespace Surexs.DanceOff.Core
             ConfigureMenuNavigation(play,solo,versus);
 
             var instructions=CreateInstructions(canvas);
-            var instructionsButton=instructions.AddComponent<Button>();
-            instructionsButton.targetGraphic=instructions.GetComponent<Image>();
-            instructionsButton.transition=Selectable.Transition.None;
+            var p1Ready=CreateReadyPrompt(instructions.transform,"PLAYER 1",new Vector2(-420,-390),
+                new Color(.10f,.70f,1f),blueButtonTexture);
+            var p2Ready=CreateReadyPrompt(instructions.transform,"PLAYER 2",new Vector2(420,-390),
+                new Color(.10f,.70f,1f),blueButtonTexture);
+            var continueLabel=Text("Ready Continue",instructions.transform,new Vector2(0,-495),
+                new Vector2(1200,72),"",34);
+            continueLabel.font=SurexsVisualTheme.TitleFont;
 
-            controller.Configure(main.gameObject,instructions,play,solo,versus);
+            var p1Input=gameObject.AddComponent<PlayerReadyInputMonitor>();
+            p1Input.Configure(player1InputSource,player1GamepadIndex,player1GamepadDevice,player1Joystick,
+                Key.A,Key.W,Key.S,Key.D);
+            var p2Input=gameObject.AddComponent<PlayerReadyInputMonitor>();
+            p2Input.Configure(player2InputSource,player2GamepadIndex,player2GamepadDevice,player2Joystick,
+                Key.LeftArrow,Key.UpArrow,Key.DownArrow,Key.RightArrow);
+
+            controller.Configure(main.gameObject,instructions,play,solo,versus,p1Input,p2Input,
+                p1Ready,p2Ready,continueLabel,readyHoldDuration);
             play.onClick.AddListener(controller.FocusModeSelection);
             solo.onClick.AddListener(controller.StartSolo);
             versus.onClick.AddListener(controller.StartVersus);
-            instructionsButton.onClick.AddListener(controller.BeginSelectedGame);
 
             WarnMissingAsset(brokerHeroLogoTexture,nameof(brokerHeroLogoTexture));
             WarnMissingAsset(surexsLogoTexture,nameof(surexsLogoTexture));
@@ -142,6 +165,29 @@ namespace Surexs.DanceOff.Core
             aspect.aspectMode=AspectRatioFitter.AspectMode.FitInParent;
             aspect.aspectRatio=1672f/941f;
             return instructions.gameObject;
+        }
+
+        private PlayerReadyPromptView CreateReadyPrompt(Transform parent,string playerName,Vector2 position,
+            Color accent,Texture buttonTexture)
+        {
+            var panel=Raw(playerName+" Ready",parent,position,new Vector2(430,128),buttonTexture);
+            panel.color=Color.white;
+            panel.raycastTarget=false;
+            var outline=panel.gameObject.AddComponent<Outline>();
+            outline.effectColor=new Color(accent.r,accent.g,accent.b,.95f);
+            outline.effectDistance=new Vector2(4,-4);
+            var fill=Image(playerName+" Ready Progress",panel.transform,new Vector2(0,-44),new Vector2(344,11),accent);
+            fill.type=UnityEngine.UI.Image.Type.Filled;
+            fill.fillMethod=UnityEngine.UI.Image.FillMethod.Horizontal;
+            fill.fillOrigin=(int)UnityEngine.UI.Image.OriginHorizontal.Left;
+            fill.fillAmount=0f;
+            fill.raycastTarget=false;
+            var label=Text(playerName+" Ready Label",panel.transform,new Vector2(0,5),new Vector2(390,88),"",28);
+            label.font=SurexsVisualTheme.TitleFont;
+            label.lineSpacing=1.05f;
+            var view=panel.gameObject.AddComponent<PlayerReadyPromptView>();
+            view.Configure(playerName,label,fill,outline,accent);
+            return view;
         }
 
         private static void ConfigureMenuNavigation(Button play,Button solo,Button versus)
@@ -249,7 +295,7 @@ namespace Surexs.DanceOff.Core
             text.font=SurexsVisualTheme.BodyFont;
             text.text=value;
             text.fontSize=fontSize;
-            text.fontStyle=FontStyle.Bold;
+            text.fontStyle=FontStyle.Normal;
             text.alignment=TextAnchor.MiddleCenter;
             text.color=SurexsVisualTheme.TextPrimary;
             text.raycastTarget=false;
