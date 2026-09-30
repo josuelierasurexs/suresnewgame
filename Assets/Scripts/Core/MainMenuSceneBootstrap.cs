@@ -55,6 +55,8 @@ namespace Surexs.DanceOff.Core
                 new Color(.10f,.70f,1f),blueButtonTexture);
             var p2Ready=CreateReadyPrompt(instructions.transform,"PLAYER 2",new Vector2(420,-390),
                 new Color(.10f,.70f,1f),blueButtonTexture);
+            var instructionsBack=TextureButton("Instructions Back",instructions.transform,new Vector2(0,-390),
+                new Vector2(300,112),"B  VOLVER",greenButtonTexture,27);
             var continueLabel=Text("Ready Continue",instructions.transform,new Vector2(0,-495),
                 new Vector2(1200,72),"",34);
             continueLabel.font=SurexsVisualTheme.TitleFont;
@@ -66,11 +68,12 @@ namespace Surexs.DanceOff.Core
             p2Input.Configure(player2InputSource,player2GamepadIndex,player2GamepadDevice,player2Joystick,
                 Key.LeftArrow,Key.UpArrow,Key.DownArrow,Key.RightArrow);
 
-            controller.Configure(main.gameObject,instructions,play,solo,versus,p1Input,p2Input,
+            controller.Configure(main.gameObject,instructions,play,solo,versus,instructionsBack,p1Input,p2Input,
                 p1Ready,p2Ready,continueLabel,readyHoldDuration);
             play.onClick.AddListener(controller.FocusModeSelection);
             solo.onClick.AddListener(controller.StartSolo);
             versus.onClick.AddListener(controller.StartVersus);
+            instructionsBack.onClick.AddListener(controller.FocusModeSelection);
 
             WarnMissingAsset(brokerHeroLogoTexture,nameof(brokerHeroLogoTexture));
             WarnMissingAsset(surexsLogoTexture,nameof(surexsLogoTexture));

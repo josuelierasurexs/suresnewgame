@@ -12,25 +12,27 @@ namespace Surexs.DanceOff.Core
         private RhythmPrototypeController gameplay;
         private PlayerSession[] players;
         private ResultsView resultsView;
+        private bool autoStart;
 
         public GameFlowState State { get; private set; }
         public GameResult LastResult { get; private set; }
 
         public void Configure(GameMode gameMode, RhythmPrototypeController controller, PlayerSession[] playerSessions,
-            ResultsView view)
+            ResultsView view,bool startAutomatically=true)
         {
             Disconnect();
             mode = gameMode;
             gameplay = controller;
             players = playerSessions;
             resultsView = view;
+            autoStart=startAutomatically;
             gameplay.ChartCompleted += OnChartCompleted;
             resultsView.RematchRequested += StartSession;
         }
 
         private void Start()
         {
-            StartSession();
+            if (autoStart) StartSession();
         }
 
         public void StartSession()

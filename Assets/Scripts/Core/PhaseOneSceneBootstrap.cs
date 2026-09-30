@@ -113,8 +113,11 @@ namespace Surexs.DanceOff.Core
                 sessions = new[] { p1.Session };
             }
             var results = CreateResultsView(canvas);
-            var flow=shared.Root.AddComponent<GameFlowController>(); flow.Configure(gameMode, shared.Controller, sessions, results);
-            shared.Root.AddComponent<GameplayNavigationController>().Configure(flow,shared.Controller,results);
+            var flow=shared.Root.AddComponent<GameFlowController>();
+            flow.Configure(gameMode,shared.Controller,sessions,results,false);
+            var navigation=shared.Root.AddComponent<GameplayNavigationController>();
+            navigation.Configure(flow,shared.Controller,results);
+            CreatePauseMenu(canvas,flow,shared.Controller,navigation);
             if (song == null) Debug.LogWarning("[Bootstrap] No hay canción asignada.", this);
             if (chart == null) Debug.LogWarning("[Bootstrap] No hay chart asignado.", this);
             if (leftControlTexture == null) Debug.LogWarning("[Bootstrap] Falta left_control.png.",this);
@@ -610,6 +613,63 @@ namespace Surexs.DanceOff.Core
             WarnMissingResultsAsset(resultsSurexsLogoTexture,nameof(resultsSurexsLogoTexture));
             WarnMissingResultsAsset(resultsQrTexture,nameof(resultsQrTexture));
             return view;
+        }
+
+        private void CreatePauseMenu(Transform canvas,GameFlowController flow,RhythmPrototypeController gameplay,
+            GameplayNavigationController navigation)
+        {
+            var overlay=Image("Pause Overlay",canvas,Vector2.zero,new Vector2(1920,1080),new Color(0f,.015f,.055f,.78f));
+            Stretch(overlay.rectTransform);
+            overlay.raycastTarget=true;
+            var card=Raw("Pause Container",overlay.transform,Vector2.zero,new Vector2(720,780),resultsContainerTexture);
+            var title=Text("Pause Title",overlay.transform,new Vector2(0,315),new Vector2(600,90),"PAUSA",52);
+            title.font=SurexsVisualTheme.TitleFont;
+
+            var resume=TextureButton("Pause Resume",card.transform,new Vector2(0,105),new Vector2(430,112),
+                "REANUDAR",resultsRetryButtonTexture);
+            var restart=TextureButton("Pause Restart",card.transform,new Vector2(0,-40),new Vector2(430,112),
+                "REINICIAR",resultsMenuButtonTexture);
+            var exit=TextureButton("Pause Exit",card.transform,new Vector2(0,-185),new Vector2(430,112),
+                "SALIR",resultsMenuButtonTexture);
+            resume.navigation=new Navigation
+            {
+                mode=Navigation.Mode.Explicit,selectOnUp=exit,selectOnDown=restart,
+                selectOnLeft=resume,selectOnRight=resume
+            };
+            restart.navigation=new Navigation
+            {
+                mode=Navigation.Mode.Explicit,selectOnUp=resume,selectOnDown=exit,
+                selectOnLeft=restart,selectOnRight=restart
+            };
+            exit.navigation=new Navigation
+            {
+                mode=Navigation.Mode.Explicit,selectOnUp=restart,selectOnDown=resume,
+                selectOnLeft=exit,selectOnRight=exit
+            };
+            var sequenceOverlay=Image("Gameplay Start Overlay",canvas,Vector2.zero,new Vector2(1920,1080),
+                new Color(0f,.015f,.055f,.78f));
+            Stretch(sequenceOverlay.rectTransform);
+            sequenceOverlay.raycastTarget=true;
+            var brandContent=Rect("Gameplay Start Branding",sequenceOverlay.transform,Vector2.zero,new Vector2(1100,420));
+            var brandGroup=brandContent.gameObject.AddComponent<CanvasGroup>();
+            var logoAspect=resultsSurexsLogoTexture!=null && resultsSurexsLogoTexture.height>0
+                ? (float)resultsSurexsLogoTexture.width/resultsSurexsLogoTexture.height
+                : 3.7f;
+            var introLogo=Raw("Gameplay Start Surexs Logo",brandContent,new Vector2(0,65),
+                new Vector2(570,570/logoAspect),resultsSurexsLogoTexture);
+            var logoFitter=introLogo.gameObject.AddComponent<AspectRatioFitter>();
+            logoFitter.aspectMode=AspectRatioFitter.AspectMode.WidthControlsHeight;
+            logoFitter.aspectRatio=logoAspect;
+            var slogan=Text("Gameplay Start Slogan",brandContent,new Vector2(0,-95),new Vector2(1000,70),
+                "Broker de Seguros para Empresas",38);
+            slogan.font=SurexsVisualTheme.BodyFont;
+            slogan.fontStyle=FontStyle.Normal;
+            var countdown=Text("Gameplay Countdown",sequenceOverlay.transform,Vector2.zero,new Vector2(500,300),"",180);
+            countdown.font=SurexsVisualTheme.TitleFont;
+            countdown.fontStyle=FontStyle.Normal;
+
+            gameplay.gameObject.AddComponent<PauseMenuController>().Configure(overlay.gameObject,resume,restart,exit,
+                sequenceOverlay.gameObject,brandGroup,countdown,flow,gameplay,navigation);
         }
 
         private void WarnMissingResultsAsset(Object asset,string field)

@@ -62,5 +62,19 @@ namespace Surexs.DanceOff.Core
                 musicSource.Stop();
             }
         }
+
+        public bool PauseMusic()
+        {
+            if (!IsPlaying) return false;
+            musicSource.Pause();
+            return true;
+        }
+
+        public bool ResumeMusic()
+        {
+            if (!HasClip) return false;
+            musicSource.UnPause();
+            return musicSource.isPlaying;
+        }
     }
 }

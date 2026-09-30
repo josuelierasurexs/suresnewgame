@@ -10,6 +10,8 @@ namespace Surexs.DanceOff.UI
         private AspectRatioFitter aspectFitter;
         private VideoPlayer videoPlayer;
         private RenderTexture renderTexture;
+        private bool shouldPlay;
+        private bool prepareRequested;
 
         public void Configure(RawImage image, VideoClip clip, AspectRatioFitter fitter)
         {
@@ -23,6 +25,7 @@ namespace Surexs.DanceOff.UI
             videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
             videoPlayer.renderMode = VideoRenderMode.RenderTexture;
             videoPlayer.clip = clip;
+            shouldPlay = clip != null;
 
             if (clip == null)
             {
@@ -38,25 +41,59 @@ namespace Surexs.DanceOff.UI
             targetImage.texture = renderTexture;
             videoPlayer.targetTexture = renderTexture;
             videoPlayer.prepareCompleted += OnPrepared;
-            videoPlayer.Prepare();
+            RequestPrepare();
         }
 
         private void OnPrepared(VideoPlayer preparedPlayer)
         {
+            prepareRequested = false;
             if (aspectFitter != null && preparedPlayer.width > 0 && preparedPlayer.height > 0)
                 aspectFitter.aspectRatio = (float)preparedPlayer.width / preparedPlayer.height;
-            preparedPlayer.Play();
+            if (shouldPlay && isActiveAndEnabled) preparedPlayer.Play();
         }
 
         private void OnEnable()
         {
-            if (videoPlayer != null && videoPlayer.isPrepared && !videoPlayer.isPlaying)
-                videoPlayer.Play();
+            ResumePreview();
         }
 
         private void OnDisable()
         {
             if (videoPlayer != null && videoPlayer.isPlaying) videoPlayer.Pause();
+            if (videoPlayer != null && !videoPlayer.isPrepared)
+            {
+                videoPlayer.Stop();
+                prepareRequested = false;
+            }
+        }
+
+        private void Update()
+        {
+            if (!shouldPlay || videoPlayer == null) return;
+            if (!videoPlayer.isPrepared)
+            {
+                RequestPrepare();
+                return;
+            }
+            if (!videoPlayer.isPlaying) videoPlayer.Play();
+        }
+
+        private void ResumePreview()
+        {
+            if (!shouldPlay || videoPlayer == null || videoPlayer.clip == null) return;
+            if (videoPlayer.isPrepared)
+            {
+                videoPlayer.Play();
+                return;
+            }
+            RequestPrepare();
+        }
+
+        private void RequestPrepare()
+        {
+            if (prepareRequested || videoPlayer == null || videoPlayer.clip == null) return;
+            prepareRequested = true;
+            videoPlayer.Prepare();
         }
 
         private void OnDestroy()

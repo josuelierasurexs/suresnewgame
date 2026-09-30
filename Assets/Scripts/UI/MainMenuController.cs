@@ -15,6 +15,7 @@ namespace Surexs.DanceOff.UI
         private Button playButton;
         private Button soloButton;
         private Button versusButton;
+        private Button instructionsBackButton;
         private PlayerReadyInputMonitor player1ReadyInput;
         private PlayerReadyInputMonitor player2ReadyInput;
         private PlayerReadyPromptView player1ReadyPrompt;
@@ -30,6 +31,7 @@ namespace Surexs.DanceOff.UI
         private bool warnedAboutDuplicateDevice;
 
         public void Configure(GameObject main, GameObject instructions, Button play, Button solo, Button versus,
+            Button instructionsBack,
             PlayerReadyInputMonitor p1Input,PlayerReadyInputMonitor p2Input,
             PlayerReadyPromptView p1Prompt,PlayerReadyPromptView p2Prompt,Text readyContinueLabel,
             float holdDuration)
@@ -39,6 +41,7 @@ namespace Surexs.DanceOff.UI
             playButton=play;
             soloButton=solo;
             versusButton=versus;
+            instructionsBackButton=instructionsBack;
             player1ReadyInput=p1Input;
             player2ReadyInput=p2Input;
             player1ReadyPrompt=p1Prompt;
@@ -71,6 +74,8 @@ namespace Surexs.DanceOff.UI
         }
         public void FocusModeSelection()
         {
+            mainPanel.SetActive(true);
+            instructionsPanel.SetActive(false);
             playButton.gameObject.SetActive(false);
             soloButton.gameObject.SetActive(true);
             versusButton.gameObject.SetActive(true);
@@ -97,6 +102,12 @@ namespace Surexs.DanceOff.UI
         private void UpdateReadyScreen()
         {
             var versus=selectedMode==GameMode.LocalVersus;
+            if (player1ReadyInput.WasBackPressedThisFrame ||
+                (versus && player2ReadyInput.WasBackPressedThisFrame))
+            {
+                FocusModeSelection();
+                return;
+            }
             var duplicateDevice=versus && player1ReadyInput.IsAvailable && player2ReadyInput.IsAvailable &&
                                 player1ReadyInput.DeviceId==player2ReadyInput.DeviceId &&
                                 player1ReadyInput.SourceType!=RhythmInputSourceType.Keyboard;
@@ -167,7 +178,10 @@ namespace Surexs.DanceOff.UI
             player2ReadyPrompt.gameObject.SetActive(versus);
             player1ReadyPrompt.GetComponent<RectTransform>().anchoredPosition=versus
                 ? new Vector2(-420,-390)
-                : new Vector2(0,-390);
+                : new Vector2(-250,-390);
+            instructionsBackButton.GetComponent<RectTransform>().anchoredPosition=versus
+                ? new Vector2(0,-390)
+                : new Vector2(250,-390);
             player1ReadyPrompt.SetState(0f,false,player1ReadyInput.IsAvailable,false);
             if (versus) player2ReadyPrompt.SetState(0f,false,player2ReadyInput.IsAvailable,false);
             continueLabel.text=versus

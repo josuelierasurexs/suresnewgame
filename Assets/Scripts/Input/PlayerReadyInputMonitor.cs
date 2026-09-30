@@ -17,6 +17,7 @@ namespace Surexs.DanceOff.Input
 
         public bool IsHeld { get; private set; }
         public bool WasPressedThisFrame { get; private set; }
+        public bool WasBackPressedThisFrame { get; private set; }
         public bool IsAvailable => resolvedDevice != null;
         public int DeviceId => resolvedDevice?.deviceId ?? -1;
         public RhythmInputSourceType SourceType => sourceType;
@@ -36,12 +37,14 @@ namespace Surexs.DanceOff.Input
             resolvedDevice = ResolveDevice();
             IsHeld = false;
             WasPressedThisFrame = false;
+            WasBackPressedThisFrame = false;
             if (resolvedDevice == null) return;
 
             if (sourceType == RhythmInputSourceType.Keyboard)
             {
                 var keyboard = resolvedDevice as Keyboard;
                 if (keyboard == null) return;
+                WasBackPressedThisFrame = keyboard.bKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame;
                 for (var index = 0; index < keyboardKeys.Length; index++)
                 {
                     var key = keyboard[keyboardKeys[index]];
@@ -53,9 +56,12 @@ namespace Surexs.DanceOff.Input
 
             if (resolvedDevice is Gamepad gamepad)
             {
+                WasBackPressedThisFrame = gamepad.buttonEast.wasPressedThisFrame;
                 ReadGamepad(gamepad);
                 return;
             }
+
+            WasBackPressedThisFrame = WasConfiguredJoystickBackPressed(resolvedDevice);
 
             foreach (var control in resolvedDevice.allControls)
             {
@@ -92,6 +98,19 @@ namespace Surexs.DanceOff.Input
             if (button == null) return;
             IsHeld |= button.isPressed;
             WasPressedThisFrame |= button.wasPressedThisFrame;
+        }
+
+        private bool WasConfiguredJoystickBackPressed(InputDevice device)
+        {
+            var paths=joystickConfig?.rightButtonPaths;
+            if (paths==null) return false;
+            for (var index=0;index<paths.Length;index++)
+            {
+                if (string.IsNullOrWhiteSpace(paths[index])) continue;
+                var button=device.TryGetChildControl<ButtonControl>(paths[index].Trim());
+                if (button!=null && button.wasPressedThisFrame) return true;
+            }
+            return false;
         }
 
         private InputDevice ResolveDevice()

@@ -14,9 +14,11 @@ namespace Surexs.DanceOff.Core
 
         private bool sessionRunning;
         private bool completed;
+        private bool paused;
 
         public event Action ChartCompleted;
         public bool IsCompleted => completed;
+        public bool IsPaused => paused;
 
         public void Configure(AudioManager audio, ChartManager chart, TileSpawner spawner, RhythmJudge judge,
             RhythmGameplayConfig gameplayConfig)
@@ -37,6 +39,7 @@ namespace Surexs.DanceOff.Core
         {
             audioManager.StopMusic();
             sessionRunning = false;
+            paused = false;
             if (!chartManager.LoadChart())
             {
                 Debug.LogError("[RhythmPrototype] No se inició el prototipo porque el chart no es válido.", this);
@@ -72,14 +75,29 @@ namespace Surexs.DanceOff.Core
         public void StopSession()
         {
             sessionRunning = false;
+            paused = false;
             audioManager.StopMusic();
             for (var index=0; index<rhythmJudges.Length; index++) rhythmJudges[index].StopJudging();
             for (var index=0; index<tileSpawners.Length; index++) tileSpawners[index].StopSpawning();
         }
 
+        public bool PauseSession()
+        {
+            if (!sessionRunning || completed || paused || !audioManager.PauseMusic()) return false;
+            paused=true;
+            return true;
+        }
+
+        public bool ResumeSession()
+        {
+            if (!sessionRunning || completed || !paused || !audioManager.ResumeMusic()) return false;
+            paused=false;
+            return true;
+        }
+
         private void Update()
         {
-            if (completed || !sessionRunning || audioManager.IsPlaying)
+            if (completed || !sessionRunning || paused || audioManager.IsPlaying)
             {
                 return;
             }
