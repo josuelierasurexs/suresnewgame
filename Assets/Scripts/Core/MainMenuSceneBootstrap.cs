@@ -48,7 +48,11 @@ namespace Surexs.DanceOff.Core
             var play=TextureButton("Play",main,new Vector2(0,-315),new Vector2(460,118),"JUGAR",greenButtonTexture,39);
             var solo=TextureButton("Solo",main,new Vector2(-235,-445),new Vector2(420,94),"1 JUGADOR",blueButtonTexture,28);
             var versus=TextureButton("Versus",main,new Vector2(235,-445),new Vector2(420,94),"1 VS 1",blueButtonTexture,28);
-            ConfigureMenuNavigation(play,solo,versus);
+            var leaderboardButton=TextureButton("Leaderboard",main,new Vector2(0,-445),new Vector2(460,94),
+                "LEADERBOARD",blueButtonTexture,28);
+            ConfigureMenuNavigation(play,solo,versus,leaderboardButton);
+
+            var leaderboardPanel=CreateLeaderboard(canvas,out var leaderboardView,out var leaderboardBack);
 
             var instructions=CreateInstructions(canvas);
             var p1Ready=CreateReadyPrompt(instructions.transform,"PLAYER 1",new Vector2(-420,-390),
@@ -68,11 +72,14 @@ namespace Surexs.DanceOff.Core
             p2Input.Configure(player2InputSource,player2GamepadIndex,player2GamepadDevice,player2Joystick,
                 Key.LeftArrow,Key.UpArrow,Key.DownArrow,Key.RightArrow);
 
-            controller.Configure(main.gameObject,instructions,play,solo,versus,instructionsBack,p1Input,p2Input,
-                p1Ready,p2Ready,continueLabel,readyHoldDuration);
+            controller.Configure(main.gameObject,instructions,leaderboardPanel,play,solo,versus,leaderboardButton,
+                leaderboardBack,leaderboardView,instructionsBack,p1Input,p2Input,p1Ready,p2Ready,continueLabel,
+                readyHoldDuration);
             play.onClick.AddListener(controller.FocusModeSelection);
             solo.onClick.AddListener(controller.StartSolo);
             versus.onClick.AddListener(controller.StartVersus);
+            leaderboardButton.onClick.AddListener(controller.ShowLeaderboard);
+            leaderboardBack.onClick.AddListener(controller.ShowMain);
             instructionsBack.onClick.AddListener(controller.FocusModeSelection);
 
             WarnMissingAsset(brokerHeroLogoTexture,nameof(brokerHeroLogoTexture));
@@ -193,11 +200,38 @@ namespace Surexs.DanceOff.Core
             return view;
         }
 
-        private static void ConfigureMenuNavigation(Button play,Button solo,Button versus)
+        private GameObject CreateLeaderboard(Transform canvas,out LeaderboardView view,out Button back)
         {
-            play.navigation=ExplicitNavigation(solo,solo,versus,solo);
+            var page=Rect("Menu Leaderboard",canvas,Vector2.zero,new Vector2(1920,1080));
+            Stretch(page);
+            CreateMainBackground(page);
+            CreateHeader(page);
+            var title=Text("Menu Leaderboard Title",page,new Vector2(0,375),new Vector2(1000,90),"LEADERBOARD",52);
+            title.font=SurexsVisualTheme.TitleFont;
+            var board=Image("Menu Leaderboard Card",page,new Vector2(0,5),new Vector2(980,650),new Color(.01f,.10f,.22f,.97f));
+            SurexsVisualTheme.ApplyRounded(board);
+            var boardTitle=Text("Menu Leaderboard Card Title",board.transform,new Vector2(0,260),new Vector2(820,60),"MEJORES PUNTAJES",32);
+            boardTitle.color=SurexsVisualTheme.Primary;
+            var entries=Text("Menu Leaderboard Entries",board.transform,new Vector2(0,-15),new Vector2(820,485),"",27);
+            entries.alignment=TextAnchor.UpperLeft;
+            entries.lineSpacing=1.15f;
+            back=TextureButton("Leaderboard Back",page,new Vector2(0,-425),new Vector2(390,105),"VOLVER",
+                greenButtonTexture,30);
+            back.navigation=new Navigation
+            {
+                mode=Navigation.Mode.Explicit,selectOnUp=back,selectOnDown=back,selectOnLeft=back,selectOnRight=back
+            };
+            view=page.gameObject.AddComponent<LeaderboardView>();
+            view.Configure(page.gameObject,entries,back);
+            return page.gameObject;
+        }
+
+        private static void ConfigureMenuNavigation(Button play,Button solo,Button versus,Button leaderboard)
+        {
+            play.navigation=ExplicitNavigation(leaderboard,leaderboard,leaderboard,leaderboard);
             solo.navigation=ExplicitNavigation(play,play,versus,play);
             versus.navigation=ExplicitNavigation(play,solo,solo,play);
+            leaderboard.navigation=ExplicitNavigation(play,leaderboard,leaderboard,play);
         }
 
         private static Navigation ExplicitNavigation(Selectable up,Selectable left,Selectable right,Selectable down)

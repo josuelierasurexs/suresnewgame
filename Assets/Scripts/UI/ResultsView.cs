@@ -21,6 +21,10 @@ namespace Surexs.DanceOff.UI
         private Button next;
         private Button rematch;
         private Button menu;
+        private Button leaderboardNext;
+        private InitialsEntryView initialsEntry;
+        private LeaderboardView leaderboardView;
+        private GameResult currentResult;
         private UiPanelTransition transition;
         public event Action RematchRequested;
         public event Action MenuRequested;
@@ -37,8 +41,8 @@ namespace Surexs.DanceOff.UI
             next=nextButton; rematch=rematchButton; menu=menuButton;
             transition=panel.GetComponent<UiPanelTransition>();
             if (transition == null) transition=panel.AddComponent<UiPanelTransition>();
-            next.onClick.RemoveListener(ShowSocialPage);
-            next.onClick.AddListener(ShowSocialPage);
+            next.onClick.RemoveListener(BeginInitialsEntry);
+            next.onClick.AddListener(BeginInitialsEntry);
             rematch.onClick.RemoveListener(RequestRematch);
             rematch.onClick.AddListener(RequestRematch);
             menu.onClick.RemoveListener(RequestMenu);
@@ -46,11 +50,24 @@ namespace Surexs.DanceOff.UI
             Hide();
         }
 
+        public void ConfigureLeaderboardFlow(InitialsEntryView initials, LeaderboardView leaderboard,
+            Button leaderboardContinueButton)
+        {
+            initialsEntry=initials;
+            leaderboardView=leaderboard;
+            leaderboardNext=leaderboardContinueButton;
+            leaderboardNext.onClick.RemoveListener(ShowSocialPage);
+            leaderboardNext.onClick.AddListener(ShowSocialPage);
+        }
+
         public void Show(GameResult result)
         {
+            currentResult=result;
             transition.SetVisible(true);
             summaryPage.SetActive(true);
             socialPage.SetActive(false);
+            initialsEntry?.Hide();
+            leaderboardView?.Hide();
             if (result.Mode == GameMode.Solo)
             {
                 ConfigureCard(player1Card,player1,new Vector2(125,35),new Vector2(650,725),new Vector2(0,-85),new Vector2(540,520));
@@ -87,13 +104,39 @@ namespace Surexs.DanceOff.UI
             if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(next.gameObject);
         }
 
-        public void Hide() { if (transition != null) transition.SetVisible(false,true); else if (panel != null) panel.SetActive(false); }
+        public void Hide()
+        {
+            initialsEntry?.Hide();
+            leaderboardView?.Hide();
+            if (transition != null) transition.SetVisible(false,true); else if (panel != null) panel.SetActive(false);
+        }
         private void RequestRematch() { RematchRequested?.Invoke(); }
         private void RequestMenu() { MenuRequested?.Invoke(); }
+
+        private void BeginInitialsEntry()
+        {
+            if (initialsEntry == null || leaderboardView == null)
+            {
+                ShowSocialPage();
+                return;
+            }
+            summaryPage.SetActive(false);
+            initialsEntry.Begin(currentResult.Mode, SaveResultAndShowLeaderboard);
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+        }
+
+        private void SaveResultAndShowLeaderboard(string player1Initials,string player2Initials)
+        {
+            LeaderboardStore.SaveResult(currentResult,player1Initials,player2Initials);
+            initialsEntry.Hide();
+            leaderboardView.Show();
+        }
 
         private void ShowSocialPage()
         {
             summaryPage.SetActive(false);
+            initialsEntry?.Hide();
+            leaderboardView?.Hide();
             socialPage.SetActive(true);
             if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(rematch.gameObject);
         }
@@ -159,7 +202,8 @@ namespace Surexs.DanceOff.UI
         }
         private void OnDestroy()
         {
-            if (next != null) next.onClick.RemoveListener(ShowSocialPage);
+            if (next != null) next.onClick.RemoveListener(BeginInitialsEntry);
+            if (leaderboardNext != null) leaderboardNext.onClick.RemoveListener(ShowSocialPage);
             if (rematch != null) rematch.onClick.RemoveListener(RequestRematch);
             if (menu != null) menu.onClick.RemoveListener(RequestMenu);
         }

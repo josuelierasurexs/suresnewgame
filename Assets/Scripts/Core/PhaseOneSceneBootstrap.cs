@@ -94,6 +94,7 @@ namespace Surexs.DanceOff.Core
             else CreateVersusBackdrop(canvas);
             var shared = Shared();
             PlayerSession[] sessions;
+            IInitialsInputSource[] initialsInputs;
 
             if (gameMode == GameMode.LocalVersus)
             {
@@ -104,6 +105,15 @@ namespace Surexs.DanceOff.Core
                 shared.Controller.Configure(shared.Audio, shared.Chart, new[] {p1.Tiles,p2.Tiles}, new[] {p1.Judge,p2.Judge}, gameplayConfig);
                 shared.Root.AddComponent<LocalVersusMatchState>().Configure(p1.Score, p2.Score);
                 sessions = new[] { p1.Session, p2.Session };
+                initialsInputs = new[]
+                {
+                    CreateInitialsInputSource(shared.Root,player1InputSource,player1GamepadIndex,
+                        player1GamepadAxisThreshold,player1GamepadDevice,player1Joystick,
+                        Key.W,Key.S,Key.Space,Key.Escape),
+                    CreateInitialsInputSource(shared.Root,player2InputSource,player2GamepadIndex,
+                        player2GamepadAxisThreshold,player2GamepadDevice,player2Joystick,
+                        Key.UpArrow,Key.DownArrow,Key.Enter,Key.Backspace)
+                };
             }
             else
             {
@@ -111,8 +121,15 @@ namespace Surexs.DanceOff.Core
                 var p1 = Player(shared, tileRoot, canvas, "PLAYER 1", 520, new[] {-670f,-380f,-90f}, Key.A, Key.W, Key.S, Key.D, new Color(.22f,.67f,.92f),player1InputSource,player1GamepadIndex,player1GamepadAxisThreshold,player1GamepadDevice,player1Joystick,PlayerVisualLayout.Solo);
                 shared.Controller.Configure(shared.Audio, shared.Chart, p1.Tiles, p1.Judge, gameplayConfig);
                 sessions = new[] { p1.Session };
+                initialsInputs = new[]
+                {
+                    CreateInitialsInputSource(shared.Root,player1InputSource,player1GamepadIndex,
+                        player1GamepadAxisThreshold,player1GamepadDevice,player1Joystick,
+                        Key.W,Key.S,Key.Space,Key.Escape)
+                };
             }
-            var results = CreateResultsView(canvas);
+            var results = CreateResultsView(canvas,initialsInputs[0],
+                initialsInputs.Length > 1 ? initialsInputs[1] : null);
             var flow=shared.Root.AddComponent<GameFlowController>();
             flow.Configure(gameMode,shared.Controller,sessions,results,false);
             var navigation=shared.Root.AddComponent<GameplayNavigationController>();
@@ -498,7 +515,8 @@ namespace Surexs.DanceOff.Core
             var statusView=go.AddComponent<PrototypeStatusView>();
             if (soloRedesign) statusView.ConfigureSolo(shared.Audio,shared.Chart,tiles,score,combo,scoreLabel,comboLabel,songLabel,statsLabel,progressFill);
             else statusView.ConfigureVersus(shared.Audio,shared.Chart,tiles,score,combo,scoreLabel,comboLabel,statsLabel);
-            return new PlayerSet(judge,tiles,score,new PlayerSession(judge,tiles,score,combo,feedback,player));
+            return new PlayerSet(judge,tiles,score,
+                new PlayerSession(judge,tiles,score,combo,feedback,player));
         }
 
         private static IRhythmInputSource CreateInputSource(GameObject owner, RhythmInputSourceType sourceType,
@@ -524,6 +542,16 @@ namespace Surexs.DanceOff.Core
             return keyboard;
         }
 
+        private static IInitialsInputSource CreateInitialsInputSource(GameObject owner,
+            RhythmInputSourceType sourceType,int gamepadIndex,float gamepadAxisThreshold,string gamepadDevice,
+            JoystickInputConfig joystickConfig,Key up,Key down,Key confirm,Key back)
+        {
+            var reader=owner.AddComponent<InitialsInputReader>();
+            reader.Configure(sourceType,gamepadIndex,gamepadAxisThreshold,gamepadDevice,joystickConfig,
+                up,down,confirm,back);
+            return reader;
+        }
+
         private string ControlsText()
         {
             var player1=InputLabel("P1",player1InputSource,player1GamepadIndex,player1Joystick);
@@ -540,7 +568,8 @@ namespace Surexs.DanceOff.Core
             return player == "P1" ? "P1: A / W-S / D" : "P2: ← / ↑-↓ / →";
         }
 
-        private ResultsView CreateResultsView(Transform canvas)
+        private ResultsView CreateResultsView(Transform canvas,IInitialsInputSource player1Input,
+            IInitialsInputSource player2Input)
         {
             var panel=Raw("Results Panel",canvas,Vector2.zero,new Vector2(1920,1080),background2Player);
             Stretch(panel.rectTransform);
@@ -591,6 +620,50 @@ namespace Surexs.DanceOff.Core
                 selectOnUp=retry,
                 selectOnDown=retry
             };
+
+            var initialsPage=Rect("Results Initials Page",panel.transform,Vector2.zero,new Vector2(1920,1080));
+            Stretch(initialsPage);
+            Raw("Initials Broker Hero Logo",initialsPage,new Vector2(-745,405),new Vector2(390,195),brokerHeroLogoTexture);
+            var initialsTitle=Text("Initials Title",initialsPage,new Vector2(0,405),new Vector2(1000,90),
+                "REGISTRA TUS INICIALES",50);
+            initialsTitle.font=SurexsVisualTheme.TitleFont;
+            var initialsP1Card=Raw("P1 Initials Card",initialsPage,new Vector2(-360,20),new Vector2(650,620),resultsContainerTexture);
+            var initialsP2Card=Raw("P2 Initials Card",initialsPage,new Vector2(360,20),new Vector2(650,620),resultsContainerTexture);
+            var initialsP1Header=Text("P1 Initials Header",initialsP1Card.transform,new Vector2(0,205),new Vector2(500,60),"PLAYER 1",32);
+            var initialsP2Header=Text("P2 Initials Header",initialsP2Card.transform,new Vector2(0,205),new Vector2(500,60),"PLAYER 2",32);
+            initialsP1Header.color=SurexsVisualTheme.Primary;
+            initialsP2Header.color=SurexsVisualTheme.Secondary;
+            var initialsP1Letters=Text("P1 Initials Letters",initialsP1Card.transform,new Vector2(0,35),new Vector2(520,150),"A   A   A",72);
+            var initialsP2Letters=Text("P2 Initials Letters",initialsP2Card.transform,new Vector2(0,35),new Vector2(520,150),"A   A   A",72);
+            var initialsP1Status=Text("P1 Initials Status",initialsP1Card.transform,new Vector2(0,-100),new Vector2(500,55),"LETRA 1 DE 3",28);
+            var initialsP2Status=Text("P2 Initials Status",initialsP2Card.transform,new Vector2(0,-100),new Vector2(500,55),"LETRA 1 DE 3",28);
+            var initialsInstructions=Text("Initials Instructions",initialsPage,new Vector2(0,-380),new Vector2(1500,75),"",27);
+            initialsInstructions.color=SurexsVisualTheme.TextSecondary;
+            var initialsView=initialsPage.gameObject.AddComponent<InitialsEntryView>();
+            initialsView.Configure(initialsPage.gameObject,initialsP1Card.gameObject,initialsP2Card.gameObject,
+                initialsP1Letters,initialsP2Letters,
+                initialsP1Status,initialsP2Status,initialsInstructions,player1Input,player2Input);
+
+            var leaderboardPage=Rect("Results Leaderboard Page",panel.transform,Vector2.zero,new Vector2(1920,1080));
+            Stretch(leaderboardPage);
+            Raw("Leaderboard Broker Hero Logo",leaderboardPage,new Vector2(-745,405),new Vector2(390,195),brokerHeroLogoTexture);
+            var leaderboardTitle=Text("Leaderboard Title",leaderboardPage,new Vector2(0,420),new Vector2(1000,90),"LEADERBOARD",52);
+            leaderboardTitle.font=SurexsVisualTheme.TitleFont;
+            var board=Raw("Leaderboard Card",leaderboardPage,new Vector2(0,25),new Vector2(980,720),resultsContainerTexture);
+            var boardTitle=Text("Leaderboard Card Title",board.transform,new Vector2(0,270),new Vector2(820,60),"MEJORES PUNTAJES",32);
+            boardTitle.color=SurexsVisualTheme.Primary;
+            var entries=Text("Leaderboard Entries",board.transform,new Vector2(0,-25),new Vector2(820,510),"",27);
+            entries.alignment=TextAnchor.UpperLeft;
+            entries.lineSpacing=1.15f;
+            var leaderboardNext=TextureButton("Leaderboard Next",leaderboardPage,new Vector2(0,-445),new Vector2(430,120),
+                "SIGUIENTE",resultsRetryButtonTexture);
+            leaderboardNext.navigation=new Navigation
+            {
+                mode=Navigation.Mode.Explicit,selectOnLeft=leaderboardNext,selectOnRight=leaderboardNext,
+                selectOnUp=leaderboardNext,selectOnDown=leaderboardNext
+            };
+            var leaderboardView=leaderboardPage.gameObject.AddComponent<LeaderboardView>();
+            leaderboardView.Configure(leaderboardPage.gameObject,entries,leaderboardNext);
             title.font=SurexsVisualTheme.TitleFont;
             p1.font=SurexsVisualTheme.BodyFont;
             p2.font=SurexsVisualTheme.BodyFont;
@@ -604,6 +677,7 @@ namespace Surexs.DanceOff.Core
             var view=panel.gameObject.AddComponent<ResultsView>();
             view.Configure(panel.gameObject,title,p1,p2,p1Header,p2Header,p1Card.gameObject,p2Card.gameObject,
                 summaryPage.gameObject,socialPage.gameObject,next,retry,menu);
+            view.ConfigureLeaderboardFlow(initialsView,leaderboardView,leaderboardNext);
             WarnMissingResultsAsset(background2Player,nameof(background2Player));
             WarnMissingResultsAsset(brokerHeroLogoTexture,nameof(brokerHeroLogoTexture));
             WarnMissingResultsAsset(resultsCharacterTexture,nameof(resultsCharacterTexture));
@@ -811,7 +885,15 @@ namespace Surexs.DanceOff.Core
         }
 
         private readonly struct SharedSet { public SharedSet(GameObject r,AudioManager a,ChartManager c,RhythmPrototypeController p){Root=r;Audio=a;Chart=c;Controller=p;} public GameObject Root{get;} public AudioManager Audio{get;} public ChartManager Chart{get;} public RhythmPrototypeController Controller{get;} }
-        private readonly struct PlayerSet { public PlayerSet(RhythmJudge j,TileSpawner t,ScoreManager s,PlayerSession session){Judge=j;Tiles=t;Score=s;Session=session;} public RhythmJudge Judge{get;} public TileSpawner Tiles{get;} public ScoreManager Score{get;} public PlayerSession Session{get;} }
+        private readonly struct PlayerSet
+        {
+            public PlayerSet(RhythmJudge j,TileSpawner t,ScoreManager s,PlayerSession session)
+            { Judge=j;Tiles=t;Score=s;Session=session; }
+            public RhythmJudge Judge{get;}
+            public TileSpawner Tiles{get;}
+            public ScoreManager Score{get;}
+            public PlayerSession Session{get;}
+        }
         private readonly struct VisualSet { public VisualSet(RectTransform b,RectTransform l,RectTransform r,Image i,Text p){Body=b;LeftArm=l;RightArm=r;BodyImage=i;PoseLabel=p;} public RectTransform Body{get;} public RectTransform LeftArm{get;} public RectTransform RightArm{get;} public Image BodyImage{get;} public Text PoseLabel{get;} }
         private enum PlayerVisualLayout { Solo, VersusLeft, VersusRight }
     }

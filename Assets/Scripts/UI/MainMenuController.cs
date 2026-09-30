@@ -12,9 +12,13 @@ namespace Surexs.DanceOff.UI
     {
         private GameObject mainPanel;
         private GameObject instructionsPanel;
+        private GameObject leaderboardPanel;
         private Button playButton;
         private Button soloButton;
         private Button versusButton;
+        private Button leaderboardButton;
+        private Button leaderboardBackButton;
+        private LeaderboardView leaderboardView;
         private Button instructionsBackButton;
         private PlayerReadyInputMonitor player1ReadyInput;
         private PlayerReadyInputMonitor player2ReadyInput;
@@ -30,17 +34,22 @@ namespace Surexs.DanceOff.UI
         private bool continueArmed;
         private bool warnedAboutDuplicateDevice;
 
-        public void Configure(GameObject main, GameObject instructions, Button play, Button solo, Button versus,
-            Button instructionsBack,
+        public void Configure(GameObject main, GameObject instructions, GameObject leaderboardPanelObject,
+            Button play, Button solo, Button versus, Button leaderboard, Button leaderboardBack,
+            LeaderboardView leaderboardPanelView, Button instructionsBack,
             PlayerReadyInputMonitor p1Input,PlayerReadyInputMonitor p2Input,
             PlayerReadyPromptView p1Prompt,PlayerReadyPromptView p2Prompt,Text readyContinueLabel,
             float holdDuration)
         {
             mainPanel=main;
             instructionsPanel=instructions;
+            leaderboardPanel=leaderboardPanelObject;
             playButton=play;
             soloButton=solo;
             versusButton=versus;
+            leaderboardButton=leaderboard;
+            leaderboardBackButton=leaderboardBack;
+            leaderboardView=leaderboardPanelView;
             instructionsBackButton=instructionsBack;
             player1ReadyInput=p1Input;
             player2ReadyInput=p2Input;
@@ -67,7 +76,9 @@ namespace Surexs.DanceOff.UI
         {
             mainPanel.SetActive(true);
             instructionsPanel.SetActive(false);
+            leaderboardPanel.SetActive(false);
             playButton.gameObject.SetActive(true);
+            leaderboardButton.gameObject.SetActive(true);
             soloButton.gameObject.SetActive(false);
             versusButton.gameObject.SetActive(false);
             Select(playButton);
@@ -76,13 +87,22 @@ namespace Surexs.DanceOff.UI
         {
             mainPanel.SetActive(true);
             instructionsPanel.SetActive(false);
+            leaderboardPanel.SetActive(false);
             playButton.gameObject.SetActive(false);
+            leaderboardButton.gameObject.SetActive(false);
             soloButton.gameObject.SetActive(true);
             versusButton.gameObject.SetActive(true);
             Select(soloButton);
         }
         public void StartSolo() { StartGame(GameMode.Solo); }
         public void StartVersus() { StartGame(GameMode.LocalVersus); }
+        public void ShowLeaderboard()
+        {
+            mainPanel.SetActive(false);
+            instructionsPanel.SetActive(false);
+            leaderboardView.Show();
+            Select(leaderboardBackButton);
+        }
         public void BeginSelectedGame()
         {
             if (instructionsPanel == null || !instructionsPanel.activeSelf || !AllPlayersReady() || !continueArmed)
